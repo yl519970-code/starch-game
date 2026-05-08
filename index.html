@@ -126,26 +126,7 @@
     .zone-score { font-size: 0.72rem; text-align: center; color: #8B6914; margin-top: auto; padding-top: 5px; }
     .classify-nav { display: flex; justify-content: center; gap: 10px; }
     .runner-card { padding: 0; overflow: hidden; }
-    .runner-canvas-wrapper {
-      height: 180px;
-      position: relative;
-      background: linear-gradient(180deg, #FDFAF2 0%, #F5E6C8 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .runner-character {
-      font-size: 4rem;
-      position: absolute;
-      bottom: 20px;
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
-    }
-    .runner-character.correct { transform: scale(1.4); filter: drop-shadow(0 0 16px rgba(76,175,80,0.6)); }
-    .runner-character.wrong { animation: runnerShake 0.4s; }
-    @keyframes runnerShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-10px)} 40%{transform:translateX(10px)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }
+    #runnerCanvas { border-radius: 14px; border: 2px solid var(--starch); box-shadow: 0 2px 12px var(--shadow); display: block; width: 100%; max-width: 680px; height: auto; }
     .runner-question-box {
       background: linear-gradient(135deg,#FFF8EE,#FFF3DC);
       border: 2px solid var(--starch);
@@ -309,18 +290,15 @@
     <!-- 跑酷游戏页 -->
     <div class="screen" id="screen-runner">
       <div class="card">
-        <div class="runner-instructions">🎮 点击正确答案，表情会告诉你对错！</div>
-        <div class="runner-canvas-wrapper" id="runnerWrapper">
-          <div class="runner-character" id="runnerChar">😊</div>
-        </div>
-        <div class="runner-question-box">
-          <div class="runner-tag" id="runnerTag">第 1 题</div>
-          <div class="runner-question" id="runnerQ">加载中...</div>
+        <canvas id="runnerCanvas" width="680" height="260"></canvas>
+        <div class="runner-question-box" style="margin-top:10px">
+          <div class="runner-tag" id="runnerTag"></div>
+          <div class="runner-question" id="runnerQ">点击下方选项开始！</div>
         </div>
         <div class="runner-options" id="runnerOptions"></div>
         <div class="runner-feedback" id="runnerFeedback" style="display:none"></div>
         <div class="runner-status">
-          ❤️ <span id="runnerLives">3</span> &nbsp;|&nbsp; 📊 得分 <span id="runnerScore">0</span>
+          ❤️ <span id="runnerLives">3</span> &nbsp;|&nbsp; 📊 得分 <span id="runnerScore">0</span> &nbsp;|&nbsp; 📝 <span id="runnerQNum">0/5</span>
         </div>
         <div style="text-align:center;margin-top:12px">
           <button class="btn" id="runnerStartBtn" onclick="runnerStartGame()">🎮 开始游戏</button>
@@ -519,134 +497,316 @@ function onDrop(e, zone) {
 function finishClassify() { showResult('classify'); }
 
 // ===== 跑酷游戏 =====
-const runnerQuestions = [
-  {q:"淀粉主要存在于哪种食物？",opts:["苹果","米饭","牛肉","牛奶"],correct:1,exp:"正确答案是 <strong>米饭</strong>。米饭是典型的淀粉类食物，淀粉含量约25-30%。"},
-  {q:"淀粉属于哪类营养素？",opts:["蛋白质","脂肪","碳水化合物","维生素"],correct:2,exp:"正确答案是 <strong>碳水化合物</strong>。淀粉是多糖，是最重要的碳水化合物之一。"},
-  {q:"淀粉遇碘酒变成什么颜色？",opts:["红色","绿色","蓝色","黄色"],correct:2,exp:"正确答案是 <strong>蓝色</strong>。碘酒遇淀粉变蓝是检验淀粉的经典方法！"},
-  {q:"以下哪个不是淀粉制品？",opts:["粉丝","面包","奶酪","粉条"],correct:2,exp:"正确答案是 <strong>奶酪</strong>。奶酪是乳制品，主要含蛋白质和脂肪，不是淀粉制品。"},
-  {q:"淀粉在人体内被消化成？",opts:["直接吸收","氧气","葡萄糖","水"],correct:2,exp:"正确答案是 <strong>葡萄糖</strong>。淀粉被淀粉酶分解成葡萄糖，供身体使用。"},
-  {q:"糯米比普通大米含有更多？",opts:["蛋白质","水分","膳食纤维","支链淀粉"],correct:3,exp:"正确答案是 <strong>支链淀粉</strong>。糯米几乎全是支链淀粉，所以特别黏。"},
-  {q:"淀粉的主要功能是？",opts:["构成身体","提供能量","抵御疾病","调节体温"],correct:1,exp:"正确答案是 <strong>提供能量</strong>。淀粉是人体的主要能量来源之一。"},
-  {q:"下列哪种食物淀粉含量最高？",opts:["青菜","红薯","香蕉","鸡蛋"],correct:1,exp:"正确答案是 <strong>红薯</strong>。红薯淀粉含量约20-25%，比香蕉（~3%）高很多。"},
-  {q:"生吃淀粉类食物好吗？",opts:["好","不推荐","无所谓","看情况"],correct:1,exp:"正确答案是 <strong>不推荐</strong>。生淀粉不易消化，充分加热糊化后更易吸收。"},
-  {q:"淀粉老化后会怎样？",opts:["更易消化","变得更硬","变成水","燃烧"],correct:1,exp:"正确答案是 <strong>变得更硬</strong>。米饭冷却变硬就是淀粉老化的表现。"},
+const rCanvas = document.getElementById('runnerCanvas');
+const rCtx = rCanvas.getContext('2d');
+
+// 题库（带知识卡片）
+const rQuestions = [
+  {q:"淀粉主要存在于以下哪种食物中？",opts:["苹果","米饭","牛肉","牛奶"],correct:1,exp:"米饭、面粉、土豆等谷物和根茎类食物富含淀粉！"},
+  {q:"淀粉属于哪类营养素？",opts:["蛋白质","脂肪","碳水化合物","维生素"],correct:2,exp:"淀粉是多糖，是糖类的一种，是人体重要的能量来源！"},
+  {q:"淀粉遇碘酒会变成什么颜色？",opts:["红色","绿色","蓝色","黄色"],correct:2,exp:"淀粉遇碘变蓝是经典的化学实验！可用此检测食物中的淀粉。"},
+  {q:"以下哪个不是淀粉制品？",opts:["粉丝","面包","奶酪","粉条"],correct:2,exp:"奶酪是乳制品，不含淀粉；粉丝和粉条都是淀粉加工而成！"},
+  {q:"淀粉在人体内被消化成什么？",opts:["直接吸收","氧气","葡萄糖","水"],correct:2,exp:"淀粉被消化成葡萄糖后，才能被人体细胞利用产生能量！"},
+  {q:"糯米比普通大米含有更多什么？",opts:["蛋白质","水分","膳食纤维","支链淀粉"],correct:3,exp:"糯米富含支链淀粉，所以更黏糯！支链淀粉分支多，更易消化。"},
+  {q:"淀粉的主要生理功能是？",opts:["构成身体","提供能量","抵御疾病","调节体温"],correct:1,exp:"淀粉是人体最经济、最主要的能量来源！"},
+  {q:"下列食物淀粉含量最高的是？",opts:["青菜","红薯","香蕉","鸡蛋"],correct:1,exp:"红薯是高淀粉食物，是优质的碳水化合物来源！"},
+  {q:"生吃淀粉类食物好吗？",opts:["非常好","不推荐","无所谓","看情况"],correct:1,exp:"生淀粉难以消化，还可能含有有害物质，应加热后食用！"},
+  {q:"淀粉老化后会怎样？",opts:["更易消化","变得更硬","变成水","燃烧"],correct:1,exp:"淀粉老化会变硬变干，这就是馒头变硬的原因！"},
 ];
 
-let runnerQIdx = 0;
-let runnerScore = 0;
-let runnerLives = 3;
-let runnerStarted = false;
-let runnerOver = false;
-let runnerAnswered = false;
-let runnerShuffled = [];
+// 星星背景
+const rStars = [];
+for (let i = 0; i < 50; i++) {
+  rStars.push({x:Math.random()*rCanvas.width,y:Math.random()*rCanvas.height,size:Math.random()*1.5+0.5,speed:Math.random()*0.8+0.3});
+}
+
+// 玩家（笑脸）
+let rPlayer = {x:340,y:220,size:28,targetX:340,targetY:220,animating:false};
+// 飞行动画状态
+let rFlying = false;
+let rFlyTarget = {x:340,y:120};
+let rFlyDone = false;
+
+// 游戏状态
+let rScore = 0, rLives = 3, rQIdx = 0, rStarted = false, rOver = false;
+let rAnswered = false, rShuffled = [];
+let rKnowledge = false, rKnowledgeTimer = 0;
+
+// 键盘控制
+const rKeys = {};
+document.addEventListener('keydown', e => { rKeys[e.key] = true; });
+document.addEventListener('keyup', e => { rKeys[e.key] = false; });
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 function startRunner() {
-  runnerQIdx = 0;
-  runnerScore = 0;
-  runnerLives = 3;
-  runnerStarted = false;
-  runnerOver = false;
-  runnerAnswered = false;
-  runnerShuffled = shuffle(runnerQuestions).slice(0,5);
-  document.getElementById('runnerLives').textContent = runnerLives;
-  document.getElementById('runnerScore').textContent = runnerScore;
+  rScore = 0; rLives = 3; rQIdx = 0; rStarted = false; rOver = false;
+  rAnswered = false; rKnowledge = false; rKnowledgeTimer = 0; rFlying = false;
+  rPlayer = {x:340,y:220,size:28,targetX:340,targetY:220,animating:false};
+  rShuffled = shuffle(rQuestions).slice(0,5);
   document.getElementById('runnerStartBtn').style.display = '';
   document.getElementById('runnerFeedback').style.display = 'none';
-  document.getElementById('runnerOptions').innerHTML = '';
-  document.getElementById('runnerQ').textContent = '点击下方按钮开始游戏！';
+  document.getElementById('runnerQ').textContent = '点击下方开始按钮开始游戏！';
   document.getElementById('runnerTag').textContent = '';
-  document.getElementById('runnerChar').textContent = '😊';
-  document.getElementById('runnerChar').className = 'runner-character';
+  document.getElementById('runnerLives').textContent = rLives;
+  document.getElementById('runnerScore').textContent = rScore;
+  document.getElementById('runnerQNum').textContent = `0/${rShuffled.length}`;
+  renderROptions(null);
 }
 
-function startRunnerGame() {
-  runnerStarted = true;
-  runnerOver = false;
-  runnerAnswered = false;
+function runnerStartGame() {
+  rStarted = true; rOver = false; rAnswered = false;
   document.getElementById('runnerStartBtn').style.display = 'none';
-  nextRunnerQuestion();
+  nextRQuestion();
 }
 
-function nextRunnerQuestion() {
-  runnerAnswered = false;
-  if (runnerQIdx >= runnerShuffled.length) { winRunner(); return; }
-  const q = runnerShuffled[runnerQIdx];
-  document.getElementById('runnerTag').textContent = `第 ${runnerQIdx + 1} / ${runnerShuffled.length} 题`;
+function nextRQuestion() {
+  rAnswered = false; rFlying = false; rFlyDone = false;
+  rKnowledge = false;
+  // 重置玩家到底部中间
+  rPlayer.x = 340; rPlayer.y = 220;
+  rPlayer.targetX = 340; rPlayer.targetY = 220;
+  rPlayer.animating = false;
+  if (rQIdx >= rShuffled.length) { winR(); return; }
+  const q = rShuffled[rQIdx];
+  document.getElementById('runnerTag').textContent = `第 ${rQIdx+1} / ${rShuffled.length} 题`;
   document.getElementById('runnerQ').textContent = q.q;
   document.getElementById('runnerFeedback').style.display = 'none';
-  document.getElementById('runnerChar').textContent = '😊';
-  document.getElementById('runnerChar').className = 'runner-character';
+  document.getElementById('runnerLives').textContent = rLives;
+  document.getElementById('runnerScore').textContent = rScore;
+  document.getElementById('runnerQNum').textContent = `${rQIdx}/${rShuffled.length}`;
+  renderROptions(q);
+}
 
-  const opts = document.getElementById('runnerOptions');
-  const letters = ['A', 'B', 'C', 'D'];
-  opts.innerHTML = q.opts.map((opt, i) =>
+function renderROptions(q) {
+  const el = document.getElementById('runnerOptions');
+  if (!q) { el.innerHTML = ''; return; }
+  const letters = ['A','B','C','D'];
+  el.innerHTML = q.opts.map((opt,i) =>
     `<button class="runner-opt" id="r-opt-${i}" onclick="runnerSelect(${i})">${letters[i]}. ${opt}</button>`
   ).join('');
-
-  document.getElementById('runnerLives').textContent = runnerLives;
-  document.getElementById('runnerScore').textContent = runnerScore;
 }
 
 function runnerSelect(idx) {
-  if (runnerAnswered || runnerOver) return;
-  runnerAnswered = true;
-  const q = runnerShuffled[runnerQIdx];
+  if (rAnswered || rOver || !rStarted) return;
+  rAnswered = true;
+  const q = rShuffled[rQIdx];
   const correct = idx === q.correct;
-  const char = document.getElementById('runnerChar');
+
+  // 获取选项按钮位置，让玩家飞过去
+  const btn = document.getElementById(`r-opt-${idx}`);
+  const canvasRect = rCanvas.getBoundingClientRect();
+  const btnRect = btn.getBoundingClientRect();
+  // 按钮相对于画布的Y位置（canvas内部坐标）
+  const canvasTop = canvasRect.top;
+  const canvasHeight = canvasRect.height;
+  const relativeTop = btnRect.top - canvasTop;
+  const relativeBottom = btnRect.bottom - canvasTop;
+  const flyY = (relativeTop + relativeBottom) / 2 * (rCanvas.height / canvasHeight);
+  const flyX = (btnRect.left + btnRect.right) / 2 - canvasRect.left;
+  const scaleX = rCanvas.width / canvasRect.width;
+  const flyXCanvas = flyX * scaleX;
 
   // 禁用所有按钮
-  document.querySelectorAll('.runner-opt').forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === q.correct) {
-      btn.classList.add('correct-opt');
-    } else if (i === idx && !correct) {
-      btn.classList.add('wrong-opt');
-    }
+  document.querySelectorAll('.runner-opt').forEach((b,i) => {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct-opt');
+    else if (i === idx && !correct) b.classList.add('wrong-opt');
   });
 
-  if (correct) {
-    runnerScore++;
-    updateScore(10);
-    updateStreak(true);
-    char.textContent = '😄';
-    char.className = 'runner-character correct';
-  } else {
-    runnerLives--;
-    updateStreak(false);
-    char.textContent = '😢';
-    char.className = 'runner-character wrong';
-  }
+  // 触发飞行动画
+  rFlying = true;
+  rFlyTarget = {x: flyXCanvas, y: Math.max(30, Math.min(flyY, rCanvas.height - 30))};
+  rFlyDone = false;
 
-  document.getElementById('runnerLives').textContent = runnerLives;
-  document.getElementById('runnerScore').textContent = runnerScore;
-
-  const fb = document.getElementById('runnerFeedback');
-  fb.innerHTML = `${correct ? '✅ 正确！' : '❌ 答错了！'} 正确答案：${q.opts[q.correct]}<br><span style="font-size:0.8rem;color:#9A7840">${q.exp}</span>`;
-  fb.style.display = 'block';
-  fb.style.borderLeftColor = correct ? '#4CAF50' : '#F44336';
-
+  // 动画结束后再显示结果
   setTimeout(() => {
-    if (runnerLives <= 0) {
-      runnerOver = true;
-      document.getElementById('runnerStartBtn').style.display = '';
-      document.getElementById('runnerQ').textContent = '游戏结束！';
-      document.getElementById('runnerTag').textContent = '';
+    rFlying = false;
+    if (correct) {
+      rScore++; updateScore(10); updateStreak(true);
     } else {
-      runnerQIdx++;
-      nextRunnerQuestion();
+      rLives--; updateStreak(false);
     }
-  }, 2000);
+    document.getElementById('runnerLives').textContent = rLives;
+    document.getElementById('runnerScore').textContent = rScore;
+
+    const fb = document.getElementById('runnerFeedback');
+    fb.innerHTML = `${correct ? '✅ 正确！' : '❌ 答错了！'} 正确答案：${q.opts[q.correct]}<br><span style="font-size:0.8rem;color:#9A7840">💡 ${q.exp}</span>`;
+    fb.style.display = 'block';
+    fb.style.borderLeftColor = correct ? '#4CAF50' : '#F44336';
+
+    setTimeout(() => {
+      if (rLives <= 0) {
+        rOver = true;
+        document.getElementById('runnerStartBtn').style.display = '';
+        document.getElementById('runnerQ').textContent = '游戏结束！';
+        document.getElementById('runnerTag').textContent = '';
+      } else {
+        rQIdx++;
+        nextRQuestion();
+      }
+    }, 1800);
+  }, 500);
 }
 
-function winRunner() {
-  runnerOver = true;
-  document.getElementById('runnerChar').textContent = '🏆';
-  document.getElementById('runnerChar').className = 'runner-character correct';
+function winR() {
+  rOver = true;
   document.getElementById('runnerStartBtn').style.display = '';
-  document.getElementById('runnerQ').textContent = '恭喜通关！';
-  document.getElementById('runnerTag').textContent = '';
   showResult('runner');
 }
+
+// ===== 绘制函数 =====
+function drawRStars() {
+  rStars.forEach(s => {
+    rCtx.fillStyle = 'rgba(200,169,110,0.5)';
+    rCtx.beginPath();
+    rCtx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+    rCtx.fill();
+    s.y += s.speed;
+    if (s.y > rCanvas.height) { s.y = 0; s.x = Math.random()*rCanvas.width; }
+  });
+}
+
+function drawRPlayer() {
+  // 发光效果
+  const glow = rCtx.createRadialGradient(rPlayer.x,rPlayer.y,0,rPlayer.x,rPlayer.y,rPlayer.size*1.8);
+  glow.addColorStop(0,'rgba(255,220,100,0.4)');
+  glow.addColorStop(1,'rgba(255,220,100,0)');
+  rCtx.fillStyle = glow;
+  rCtx.beginPath();
+  rCtx.arc(rPlayer.x, rPlayer.y, rPlayer.size*1.8, 0, Math.PI*2);
+  rCtx.fill();
+  // 身体（金色圆）
+  rCtx.fillStyle = '#FFAA30';
+  rCtx.beginPath();
+  rCtx.arc(rPlayer.x, rPlayer.y, rPlayer.size, 0, Math.PI*2);
+  rCtx.fill();
+  // 眼睛
+  rCtx.fillStyle = '#FFF';
+  rCtx.beginPath();
+  rCtx.arc(rPlayer.x-8, rPlayer.y-6, 6, 0, Math.PI*2);
+  rCtx.arc(rPlayer.x+8, rPlayer.y-6, 6, 0, Math.PI*2);
+  rCtx.fill();
+  rCtx.fillStyle = '#333';
+  rCtx.beginPath();
+  rCtx.arc(rPlayer.x-8, rPlayer.y-6, 3, 0, Math.PI*2);
+  rCtx.arc(rPlayer.x+8, rPlayer.y-6, 3, 0, Math.PI*2);
+  rCtx.fill();
+  // 笑脸
+  rCtx.strokeStyle = '#333';
+  rCtx.lineWidth = 2;
+  rCtx.beginPath();
+  rCtx.arc(rPlayer.x, rPlayer.y+4, 9, 0.2, Math.PI-0.2);
+  rCtx.stroke();
+}
+
+function drawRStartScreen() {
+  // 背景渐变
+  const grad = rCtx.createLinearGradient(0,0,0,rCanvas.height);
+  grad.addColorStop(0,'#FDFAF2');
+  grad.addColorStop(1,'#F5E6C8');
+  rCtx.fillStyle = grad;
+  rCtx.fillRect(0,0,rCanvas.width,rCanvas.height);
+  // 同心圆装饰
+  for (let i = 0; i < 5; i++) {
+    rCtx.fillStyle = `rgba(200,169,110,${0.06+i*0.04})`;
+    rCtx.beginPath();
+    rCtx.arc(rCanvas.width/2, rCanvas.height/2, 40+i*30, 0, Math.PI*2);
+    rCtx.fill();
+  }
+  // 标题
+  rCtx.fillStyle = '#8B6914';
+  rCtx.font = 'bold 28px "PingFang SC","Microsoft YaHei",serif';
+  rCtx.textAlign = 'center';
+  rCtx.fillText('🏃 淀粉知识大作战', rCanvas.width/2, 80);
+  rCtx.font = '16px "PingFang SC","Microsoft YaHei",serif';
+  rCtx.fillStyle = '#9A7840';
+  rCtx.fillText('边玩边学淀粉知识！', rCanvas.width/2, 115);
+  rCtx.font = '13px "PingFang SC","Microsoft YaHei",serif';
+  rCtx.fillStyle = '#8B6914';
+  ['1. 点击正确答案 +10分','2. 答错 ❤️-1','3. 通关5道题即获胜！'].forEach((r,i) =>
+    rCtx.fillText(r, rCanvas.width/2, 160+i*26)
+  );
+  // 笑脸提示
+  rCtx.font = 'bold 18px "PingFang SC","Microsoft YaHei",serif';
+  rCtx.fillStyle = '#C8963E';
+  rCtx.fillText('点击下方 "开始游戏" 按钮！', rCanvas.width/2, 248);
+  // 画个笑脸在中间
+  rPlayer.x = rCanvas.width/2; rPlayer.y = rCanvas.height/2;
+  drawRPlayer();
+  rPlayer.x = 340; rPlayer.y = 220;
+}
+
+function drawRGameOver() {
+  rCtx.fillStyle = 'rgba(30,20,10,0.85)';
+  rCtx.fillRect(0,0,rCanvas.width,rCanvas.height);
+  rCtx.fillStyle = '#FFD700';
+  rCtx.font = 'bold 36px "PingFang SC","Microsoft YaHei",serif';
+  rCtx.textAlign = 'center';
+  rCtx.fillText('游戏结束', rCanvas.width/2, rCanvas.height/2-35);
+  rCtx.fillStyle = '#FFF';
+  rCtx.font = '22px "PingFang SC","Microsoft YaHei",serif';
+  rCtx.fillText('📊 得分：'+rScore+' | ❤️ '+rLives, rCanvas.width/2, rCanvas.height/2+15);
+  rCtx.font = '14px "PingFang SC","Microsoft YaHei",serif';
+  rCtx.fillStyle = '#C8A020';
+  rCtx.fillText('点击下方 "开始游戏" 重新挑战', rCanvas.width/2, rCanvas.height/2+60);
+}
+
+// ===== 更新逻辑 =====
+function updateR() {
+  // 飞行动画：玩家平滑飞向目标
+  if (rFlying && !rFlyDone) {
+    rPlayer.x += (rFlyTarget.x - rPlayer.x) * 0.25;
+    rPlayer.y += (rFlyTarget.y - rPlayer.y) * 0.25;
+    if (Math.abs(rPlayer.x - rFlyTarget.x) < 2 && Math.abs(rPlayer.y - rFlyTarget.y) < 2) {
+      rPlayer.x = rFlyTarget.x; rPlayer.y = rFlyTarget.y;
+    }
+  }
+  // 键盘移动（仅游戏进行中，未回答时）
+  if (rStarted && !rOver && !rAnswered) {
+    const spd = 5;
+    if (rKeys['ArrowLeft'] || rKeys['a']) rPlayer.x = Math.max(rPlayer.size, rPlayer.x - spd);
+    if (rKeys['ArrowRight'] || rKeys['d']) rPlayer.x = Math.min(rCanvas.width - rPlayer.size, rPlayer.x + spd);
+    if (rKeys['ArrowUp'] || rKeys['w']) rPlayer.y = Math.max(rPlayer.size, rPlayer.y - spd);
+    if (rKeys['ArrowDown'] || rKeys['s']) rPlayer.y = Math.min(rCanvas.height - rPlayer.size, rPlayer.y + spd);
+  }
+}
+
+// ===== 主循环 =====
+function gameLoopR() {
+  rCtx.clearRect(0,0,rCanvas.width,rCanvas.height);
+
+  // 背景
+  const grad = rCtx.createLinearGradient(0,0,0,rCanvas.height);
+  grad.addColorStop(0,'#FDFAF2');
+  grad.addColorStop(1,'#F5E6C8');
+  rCtx.fillStyle = grad;
+  rCtx.fillRect(0,0,rCanvas.width,rCanvas.height);
+
+  drawRStars();
+
+  if (!rStarted) {
+    drawRStartScreen();
+  } else if (rOver) {
+    drawRPlayer();
+    drawRGameOver();
+  } else {
+    drawRPlayer();
+    updateR();
+  }
+
+  requestAnimationFrame(gameLoopR);
+}
+
+// 启动循环
+gameLoopR();
 function showResult(mode) {
   let emoji, title, badge, detail;
   if (mode === 'quiz') {
