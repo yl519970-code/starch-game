@@ -520,17 +520,14 @@ for (let i = 0; i < 50; i++) {
   rStars.push({x:Math.random()*rCanvas.width,y:Math.random()*rCanvas.height,size:Math.random()*1.5+0.5,speed:Math.random()*0.8+0.3});
 }
 
-// 玩家（笑脸）
-let rPlayer = {x:340,y:220,size:28,targetX:340,targetY:220,animating:false};
-// 飞行动画状态
-let rFlying = false;
-let rFlyTarget = {x:340,y:120};
-let rFlyDone = false;
+// 玩家（笑脸）+ 轨迹记录
+let rPlayer = {x:340,y:220,size:28,path:[],lastX:340,lastY:220};
+// 路径动画状态
+let rPathAnim = {active:false, points:[], idx:0, progress:0};
 
 // 游戏状态
 let rScore = 0, rLives = 3, rQIdx = 0, rStarted = false, rOver = false;
 let rAnswered = false, rShuffled = [];
-let rKnowledge = false, rKnowledgeTimer = 0;
 
 // 键盘控制
 const rKeys = {};
@@ -548,8 +545,8 @@ function shuffle(arr) {
 
 function startRunner() {
   rScore = 0; rLives = 3; rQIdx = 0; rStarted = false; rOver = false;
-  rAnswered = false; rKnowledge = false; rKnowledgeTimer = 0; rFlying = false;
-  rPlayer = {x:340,y:220,size:28,targetX:340,targetY:220,animating:false};
+  rAnswered = false; rPathAnim = {active:false, points:[], idx:0, done:false};
+  rPlayer = {x:340,y:220,size:28,path:[{x:340,y:220}],lastX:340,lastY:220};
   rShuffled = shuffle(rQuestions).slice(0,5);
   document.getElementById('runnerStartBtn').style.display = '';
   document.getElementById('runnerFeedback').style.display = 'none';
@@ -568,12 +565,11 @@ function runnerStartGame() {
 }
 
 function nextRQuestion() {
-  rAnswered = false; rFlying = false; rFlyDone = false;
-  rKnowledge = false;
-  // 重置玩家到底部中间
+  rAnswered = false; rPathAnim = {active:false, points:[], idx:0, done:false};
+  // 重置玩家到底部中间，并清空轨迹
   rPlayer.x = 340; rPlayer.y = 220;
-  rPlayer.targetX = 340; rPlayer.targetY = 220;
-  rPlayer.animating = false;
+  rPlayer.path = [{x:340,y:220}];
+  rPlayer.lastX = 340; rPlayer.lastY = 220;
   if (rQIdx >= rShuffled.length) { winR(); return; }
   const q = rShuffled[rQIdx];
   document.getElementById('runnerTag').textContent = `第 ${rQIdx+1} / ${rShuffled.length} 题`;
@@ -600,20 +596,6 @@ function runnerSelect(idx) {
   const q = rShuffled[rQIdx];
   const correct = idx === q.correct;
 
-  // 获取选项按钮位置，让玩家飞过去
-  const btn = document.getElementById(`r-opt-${idx}`);
-  const canvasRect = rCanvas.getBoundingClientRect();
-  const btnRect = btn.getBoundingClientRect();
-  // 按钮相对于画布的Y位置（canvas内部坐标）
-  const canvasTop = canvasRect.top;
-  const canvasHeight = canvasRect.height;
-  const relativeTop = btnRect.top - canvasTop;
-  const relativeBottom = btnRect.bottom - canvasTop;
-  const flyY = (relativeTop + relativeBottom) / 2 * (rCanvas.height / canvasHeight);
-  const flyX = (btnRect.left + btnRect.right) / 2 - canvasRect.left;
-  const scaleX = rCanvas.width / canvasRect.width;
-  const flyXCanvas = flyX * scaleX;
-
   // 禁用所有按钮
   document.querySelectorAll('.runner-opt').forEach((b,i) => {
     b.disabled = true;
@@ -621,14 +603,48 @@ function runnerSelect(idx) {
     else if (i === idx && !correct) b.classList.add('wrong-opt');
   });
 
-  // 触发飞行动画
-  rFlying = true;
-  rFlyTarget = {x: flyXCanvas, y: Math.max(30, Math.min(flyY, rCanvas.height - 30))};
-  rFlyDone = false;
+  // 计算正确选项在画布上的最终目标位置（正下方）
+  const correctCol = q.correct % 2;       // 0=left, 1=right
+  const correctRow = Math.floor(q.correct / 2); // 0=top, 1=bottom
+  const colCX = correctCol === 0 ? 170 : 510; // 2列中心X
+  const targetY = correctRow === 0 ? 190 : 230; // top选项下方 / bottom选项下方
 
-  // 动画结束后再显示结果
+  // 把记录的路径缩放平移到正确选项下方
+  const path = rPlayer.path;
+  const lastPt = path[path.length - 1] || {x: 340, y: 220};
+
+  // 构造完整路径：玩家的轨迹 + 平滑过渡到最终目标
+  const rawPoints = path.map(p => ({x: p.x, y: p.y}));
+  // 在末尾加上最终目标，构造贝塞尔控制点
+  const endX = colCX;
+  const endY = targetY;
+  const cp1x = rawPoints[rawPoints.length - 1].x;
+  const cp1y = rawPoints[rawPoints.length - 1].y;
+  const cp2x = (cp1x + endX) / 2;
+  const cp2y = endY;
+  // 生成贝塞尔曲线上的点
+  const bezierPoints = [];
+  for (let t = 0; t <= 1; t += 0.04) {
+    const mt = 1 - t;
+    const bx = mt*mt*mt*cp1x + 3*mt*mt*t*cp2x + 3*mt*t*t*endX + t*t*t*endX;
+    const by = mt*mt*mt*cp1y + 3*mt*mt*t*cp2y + 3*mt*t*t*endY + t*t*t*endY;
+    bezierPoints.push({x: bx, y: by});
+  }
+
+  // 合并：原始路径（去重缩短）+ 贝塞尔曲线
+  const deduped = [];
+  rawPoints.forEach(p => {
+    const last = deduped[deduped.length-1];
+    if (!last || Math.abs(last.x-p.x)>3 || Math.abs(last.y-p.y)>3) deduped.push({...p});
+  });
+
+  rPathAnim = {active: true, points: [...deduped, ...bezierPoints], idx: 0, done: false};
+
+  // 动画结束后显示结果
   setTimeout(() => {
-    rFlying = false;
+    rPathAnim.active = false;
+    rPathAnim.done = true;
+    rPlayer.x = endX; rPlayer.y = endY;
     if (correct) {
       rScore++; updateScore(10); updateStreak(true);
     } else {
@@ -653,7 +669,7 @@ function runnerSelect(idx) {
         nextRQuestion();
       }
     }, 1800);
-  }, 500);
+  }, 600);
 }
 
 function winR() {
@@ -675,6 +691,20 @@ function drawRStars() {
 }
 
 function drawRPlayer() {
+  // 绘制已走过的轨迹
+  const path = rPlayer.path;
+  if (path.length > 1) {
+    // 画轨迹线
+    for (let i = 1; i < path.length; i++) {
+      const alpha = i / path.length * 0.5;
+      rCtx.strokeStyle = `rgba(255,180,50,${alpha})`;
+      rCtx.lineWidth = 2;
+      rCtx.beginPath();
+      rCtx.moveTo(path[i-1].x, path[i-1].y);
+      rCtx.lineTo(path[i].x, path[i].y);
+      rCtx.stroke();
+    }
+  }
   // 发光效果
   const glow = rCtx.createRadialGradient(rPlayer.x,rPlayer.y,0,rPlayer.x,rPlayer.y,rPlayer.size*1.8);
   glow.addColorStop(0,'rgba(255,220,100,0.4)');
@@ -761,21 +791,33 @@ function drawRGameOver() {
 
 // ===== 更新逻辑 =====
 function updateR() {
-  // 飞行动画：玩家平滑飞向目标
-  if (rFlying && !rFlyDone) {
-    rPlayer.x += (rFlyTarget.x - rPlayer.x) * 0.25;
-    rPlayer.y += (rFlyTarget.y - rPlayer.y) * 0.25;
-    if (Math.abs(rPlayer.x - rFlyTarget.x) < 2 && Math.abs(rPlayer.y - rFlyTarget.y) < 2) {
-      rPlayer.x = rFlyTarget.x; rPlayer.y = rFlyTarget.y;
+  if (rPathAnim.active) {
+    // 路径动画播放
+    const pts = rPathAnim.points;
+    if (rPathAnim.idx < pts.length) {
+      const p = pts[rPathAnim.idx];
+      rPlayer.x = p.x;
+      rPlayer.y = p.y;
+      rPathAnim.idx++;
     }
+    return;
   }
+  if (rPathAnim.done) return; // 动画播完了，保持最终位置
   // 键盘移动（仅游戏进行中，未回答时）
   if (rStarted && !rOver && !rAnswered) {
     const spd = 5;
-    if (rKeys['ArrowLeft'] || rKeys['a']) rPlayer.x = Math.max(rPlayer.size, rPlayer.x - spd);
-    if (rKeys['ArrowRight'] || rKeys['d']) rPlayer.x = Math.min(rCanvas.width - rPlayer.size, rPlayer.x + spd);
-    if (rKeys['ArrowUp'] || rKeys['w']) rPlayer.y = Math.max(rPlayer.size, rPlayer.y - spd);
-    if (rKeys['ArrowDown'] || rKeys['s']) rPlayer.y = Math.min(rCanvas.height - rPlayer.size, rPlayer.y + spd);
+    let moved = false;
+    if (rKeys['ArrowLeft'] || rKeys['a']) { rPlayer.x = Math.max(rPlayer.size, rPlayer.x - spd); moved = true; }
+    if (rKeys['ArrowRight'] || rKeys['d']) { rPlayer.x = Math.min(rCanvas.width - rPlayer.size, rPlayer.x + spd); moved = true; }
+    if (rKeys['ArrowUp'] || rKeys['w']) { rPlayer.y = Math.max(rPlayer.size, rPlayer.y - spd); moved = true; }
+    if (rKeys['ArrowDown'] || rKeys['s']) { rPlayer.y = Math.min(rCanvas.height - rPlayer.size, rPlayer.y + spd); moved = true; }
+    // 记录轨迹（去重）
+    if (moved) {
+      const last = rPlayer.path[rPlayer.path.length-1];
+      if (!last || Math.abs(last.x-rPlayer.x)>3 || Math.abs(last.y-rPlayer.y)>3) {
+        rPlayer.path.push({x: rPlayer.x, y: rPlayer.y});
+      }
+    }
   }
 }
 
@@ -798,8 +840,8 @@ function gameLoopR() {
     drawRPlayer();
     drawRGameOver();
   } else {
-    drawRPlayer();
     updateR();
+    drawRPlayer();
   }
 
   requestAnimationFrame(gameLoopR);
