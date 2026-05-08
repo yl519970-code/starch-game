@@ -126,8 +126,94 @@
     .zone-score { font-size: 0.72rem; text-align: center; color: #8B6914; margin-top: auto; padding-top: 5px; }
     .classify-nav { display: flex; justify-content: center; gap: 10px; }
     .runner-card { padding: 0; overflow: hidden; }
-    .runner-instructions { padding: 14px 20px 0; text-align: center; font-size: 0.82rem; color: #9A7840; }
-    #runnerCanvas { display: block; border-radius: 0 0 18px 18px; border-top: none; cursor: pointer; }
+    .runner-canvas-wrapper {
+      height: 180px;
+      position: relative;
+      background: linear-gradient(180deg, #FDFAF2 0%, #F5E6C8 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .runner-character {
+      font-size: 4rem;
+      position: absolute;
+      bottom: 20px;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    }
+    .runner-character.correct { transform: scale(1.4); filter: drop-shadow(0 0 16px rgba(76,175,80,0.6)); }
+    .runner-character.wrong { animation: runnerShake 0.4s; }
+    @keyframes runnerShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-10px)} 40%{transform:translateX(10px)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }
+    .runner-question-box {
+      background: linear-gradient(135deg,#FFF8EE,#FFF3DC);
+      border: 2px solid var(--starch);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 12px 0 10px;
+      text-align: center;
+    }
+    .runner-tag { font-size: 0.72rem; color: var(--starch-dark); font-weight: 600; margin-bottom: 4px; }
+    .runner-question { font-size: 1rem; font-weight: 600; color: var(--text); line-height: 1.6; }
+    .runner-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .runner-opt {
+      background: linear-gradient(135deg,#FFFFFF,#FDFAF2);
+      border: 2px solid var(--starch);
+      border-radius: 12px;
+      padding: 12px 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text);
+      font-weight: 600;
+      transition: all 0.2s ease;
+      text-align: center;
+      user-select: none;
+    }
+    .runner-opt:hover:not(:disabled) {
+      border-color: var(--starch-dark);
+      background: var(--starch);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+    .runner-opt:disabled { cursor: default; opacity: 0.5; }
+    .runner-opt.correct-opt {
+      border-color: var(--correct);
+      background: #C8E6C9;
+      color: #1B5E20;
+      animation: popIn 0.3s;
+    }
+    .runner-opt.wrong-opt {
+      border-color: var(--wrong);
+      background: #FFCDD2;
+      color: #B71C1C;
+      animation: shake 0.3s;
+    }
+    .runner-opt.reveal-correct {
+      border-color: var(--correct);
+      background: #C8E6C9;
+      color: #1B5E20;
+    }
+    .runner-feedback {
+      margin-top: 10px;
+      background: linear-gradient(135deg,var(--starch),#FFF3DC);
+      border-radius: 10px;
+      padding: 10px 14px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: #5A3A00;
+      line-height: 1.7;
+      border-left: 4px solid var(--starch-dark);
+    }
+    .runner-instructions { text-align:center; font-size:0.82rem; color:#9A7840; margin-bottom:10px; padding:8px 14px; background:linear-gradient(135deg,var(--starch),#FFF3DC); border-radius:10px; border:1.5px solid var(--starch); }
+    .runner-status {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: var(--starch-dark);
+      font-weight: 600;
+    }
     .result-emoji { font-size: 4rem; margin-bottom: 10px; }
     .result-title { font-size: 1.4rem; color: var(--starch-dark); margin-bottom: 6px; font-weight: 700; }
     .result-score { font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg,var(--starch-dark),#C8A020); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 10px 0; }
@@ -222,9 +308,24 @@
     </div>
     <!-- 跑酷游戏页 -->
     <div class="screen" id="screen-runner">
-      <div class="card runner-card">
-        <div class="runner-instructions">🎮 点击画布开始，点击顶部选项收集答案！</div>
-        <canvas id="runnerCanvas" width="680" height="500"></canvas>
+      <div class="card">
+        <div class="runner-instructions">🎮 点击正确答案，表情会告诉你对错！</div>
+        <div class="runner-canvas-wrapper" id="runnerWrapper">
+          <div class="runner-character" id="runnerChar">😊</div>
+        </div>
+        <div class="runner-question-box">
+          <div class="runner-tag" id="runnerTag">第 1 题</div>
+          <div class="runner-question" id="runnerQ">加载中...</div>
+        </div>
+        <div class="runner-options" id="runnerOptions"></div>
+        <div class="runner-feedback" id="runnerFeedback" style="display:none"></div>
+        <div class="runner-status">
+          ❤️ <span id="runnerLives">3</span> &nbsp;|&nbsp; 📊 得分 <span id="runnerScore">0</span>
+        </div>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn" id="runnerStartBtn" onclick="runnerStartGame()">🎮 开始游戏</button>
+          <button class="btn btn-outline" onclick="switchMode('start')" style="margin-left:8px">返回主页</button>
+        </div>
       </div>
     </div>
     <!-- 结果页 -->
@@ -418,382 +519,134 @@ function onDrop(e, zone) {
 function finishClassify() { showResult('classify'); }
 
 // ===== 跑酷游戏 =====
-const runnerCanvas = document.getElementById('runnerCanvas');
-const rCtx = runnerCanvas.getContext('2d');
-
-// 选项位置：画布上方，y=60(第一行) 和 y=140(第二行)，中间分隔线在y=200，题目+玩家在最下方
-const OPTION_POSITIONS = [
-  {x:165,y:60},{x:515,y:60},{x:165,y:135},{x:515,y:135}
-];
-const OPTION_W = 250;
-const OPTION_H = 62;
-
 const runnerQuestions = [
-  {q:"淀粉主要存在于哪种食物？",opts:["苹果","米饭","牛肉","牛奶"],correct:1},
-  {q:"淀粉属于哪类营养素？",opts:["蛋白质","脂肪","碳水化合物","维生素"],correct:2},
-  {q:"淀粉遇碘酒变成什么颜色？",opts:["红色","绿色","蓝色","黄色"],correct:2},
-  {q:"以下哪个不是淀粉制品？",opts:["粉丝","面包","奶酪","粉条"],correct:2},
-  {q:"淀粉在人体内被消化成？",opts:["直接吸收","氧气","葡萄糖","水"],correct:2},
-  {q:"糯米比普通大米含有更多？",opts:["蛋白质","水分","膳食纤维","支链淀粉"],correct:3},
-  {q:"淀粉的主要功能是？",opts:["构成身体","提供能量","抵御疾病","调节体温"],correct:1},
-  {q:"下列哪种食物淀粉含量最高？",opts:["青菜","红薯","香蕉","鸡蛋"],correct:1},
-  {q:"生吃淀粉类食物好吗？",opts:["好","不推荐","无所谓","看情况"],correct:1},
-  {q:"淀粉老化后会怎样？",opts:["更易消化","变得更硬","变成水","燃烧"],correct:1},
+  {q:"淀粉主要存在于哪种食物？",opts:["苹果","米饭","牛肉","牛奶"],correct:1,exp:"正确答案是 <strong>米饭</strong>。米饭是典型的淀粉类食物，淀粉含量约25-30%。"},
+  {q:"淀粉属于哪类营养素？",opts:["蛋白质","脂肪","碳水化合物","维生素"],correct:2,exp:"正确答案是 <strong>碳水化合物</strong>。淀粉是多糖，是最重要的碳水化合物之一。"},
+  {q:"淀粉遇碘酒变成什么颜色？",opts:["红色","绿色","蓝色","黄色"],correct:2,exp:"正确答案是 <strong>蓝色</strong>。碘酒遇淀粉变蓝是检验淀粉的经典方法！"},
+  {q:"以下哪个不是淀粉制品？",opts:["粉丝","面包","奶酪","粉条"],correct:2,exp:"正确答案是 <strong>奶酪</strong>。奶酪是乳制品，主要含蛋白质和脂肪，不是淀粉制品。"},
+  {q:"淀粉在人体内被消化成？",opts:["直接吸收","氧气","葡萄糖","水"],correct:2,exp:"正确答案是 <strong>葡萄糖</strong>。淀粉被淀粉酶分解成葡萄糖，供身体使用。"},
+  {q:"糯米比普通大米含有更多？",opts:["蛋白质","水分","膳食纤维","支链淀粉"],correct:3,exp:"正确答案是 <strong>支链淀粉</strong>。糯米几乎全是支链淀粉，所以特别黏。"},
+  {q:"淀粉的主要功能是？",opts:["构成身体","提供能量","抵御疾病","调节体温"],correct:1,exp:"正确答案是 <strong>提供能量</strong>。淀粉是人体的主要能量来源之一。"},
+  {q:"下列哪种食物淀粉含量最高？",opts:["青菜","红薯","香蕉","鸡蛋"],correct:1,exp:"正确答案是 <strong>红薯</strong>。红薯淀粉含量约20-25%，比香蕉（~3%）高很多。"},
+  {q:"生吃淀粉类食物好吗？",opts:["好","不推荐","无所谓","看情况"],correct:1,exp:"正确答案是 <strong>不推荐</strong>。生淀粉不易消化，充分加热糊化后更易吸收。"},
+  {q:"淀粉老化后会怎样？",opts:["更易消化","变得更硬","变成水","燃烧"],correct:1,exp:"正确答案是 <strong>变得更硬</strong>。米饭冷却变硬就是淀粉老化的表现。"},
 ];
 
-let runnerItems = [];
-let runnerQuestion = null;
 let runnerQIdx = 0;
 let runnerScore = 0;
 let runnerLives = 3;
 let runnerStarted = false;
 let runnerOver = false;
-let showRunnerKnowledge = false;
-let runnerKnowledgeTimer = 0;
-let runnerShuffled = [];
-let runnerStars = [];
-let player = {x:340,y:460,size:24,speed:4};
-let selectedOptIdx = -1;
 let runnerAnswered = false;
-
-// 初始化星星
-for (let i = 0; i < 35; i++) {
-  runnerStars.push({x:Math.random()*runnerCanvas.width,y:Math.random()*runnerCanvas.height,size:Math.random()*1.5+0.5,speed:Math.random()*0.8+0.3});
-}
-
-// 键盘控制
-let runnerKeys = {};
-document.addEventListener('keydown', e => {
-  runnerKeys[e.key] = true;
-  if (e.key === ' ' && !runnerStarted && !runnerOver && currentMode === 'runner') startRunnerGame();
-  if (e.key === 'r' && runnerOver) resetRunner();
-});
-document.addEventListener('keyup', e => runnerKeys[e.key] = false);
+let runnerShuffled = [];
 
 function startRunner() {
-  player = {x:340,y:460,size:24,speed:4};
-  runnerItems = [];
-  runnerQuestion = null;
   runnerQIdx = 0;
   runnerScore = 0;
   runnerLives = 3;
   runnerStarted = false;
   runnerOver = false;
-  showRunnerKnowledge = false;
-  runnerKnowledgeTimer = 0;
   runnerAnswered = false;
-  selectedOptIdx = -1;
   runnerShuffled = shuffle(runnerQuestions).slice(0,5);
+  document.getElementById('runnerLives').textContent = runnerLives;
+  document.getElementById('runnerScore').textContent = runnerScore;
+  document.getElementById('runnerStartBtn').style.display = '';
+  document.getElementById('runnerFeedback').style.display = 'none';
+  document.getElementById('runnerOptions').innerHTML = '';
+  document.getElementById('runnerQ').textContent = '点击下方按钮开始游戏！';
+  document.getElementById('runnerTag').textContent = '';
+  document.getElementById('runnerChar').textContent = '😊';
+  document.getElementById('runnerChar').className = 'runner-character';
 }
 
 function startRunnerGame() {
   runnerStarted = true;
   runnerOver = false;
   runnerAnswered = false;
-  selectedOptIdx = -1;
+  document.getElementById('runnerStartBtn').style.display = 'none';
   nextRunnerQuestion();
 }
 
-function resetRunner() { startRunner(); }
-
 function nextRunnerQuestion() {
   runnerAnswered = false;
-  selectedOptIdx = -1;
-  player = {x:340,y:460,size:24,speed:4};
   if (runnerQIdx >= runnerShuffled.length) { winRunner(); return; }
-  runnerQuestion = runnerShuffled[runnerQIdx];
-  createRunnerItems();
+  const q = runnerShuffled[runnerQIdx];
+  document.getElementById('runnerTag').textContent = `第 ${runnerQIdx + 1} / ${runnerShuffled.length} 题`;
+  document.getElementById('runnerQ').textContent = q.q;
+  document.getElementById('runnerFeedback').style.display = 'none';
+  document.getElementById('runnerChar').textContent = '😊';
+  document.getElementById('runnerChar').className = 'runner-character';
+
+  const opts = document.getElementById('runnerOptions');
+  const letters = ['A', 'B', 'C', 'D'];
+  opts.innerHTML = q.opts.map((opt, i) =>
+    `<button class="runner-opt" id="r-opt-${i}" onclick="runnerSelect(${i})">${letters[i]}. ${opt}</button>`
+  ).join('');
+
+  document.getElementById('runnerLives').textContent = runnerLives;
+  document.getElementById('runnerScore').textContent = runnerScore;
 }
 
-function createRunnerItems() {
-  runnerItems = [];
-  if (!runnerQuestion || !runnerQuestion.options) return;
-  const shuffledPos = shuffle(OPTION_POSITIONS);
-  runnerQuestion.options.forEach((opt, i) => {
-    runnerItems.push({x:shuffledPos[i].x,y:shuffledPos[i].y,text:opt,correct:i===runnerQuestion.correct,w:OPTION_W,h:OPTION_H});
-  });
-}
-
-function winRunner() { runnerOver = true; showResult('runner'); }
-
-// 点击画布：未开始则开始游戏，已开始则处理选项点击
-runnerCanvas.addEventListener('click', function canvasClickHandler(e) {
-  if (!runnerStarted && !runnerOver && currentMode === 'runner') {
-    // 还未开始：开始游戏
-    startRunnerGame();
-  } else if (runnerStarted && !runnerOver && !runnerAnswered && currentMode === 'runner') {
-    // 游戏进行中：处理选项点击
-    const rect = runnerCanvas.getBoundingClientRect();
-    const sx = runnerCanvas.width / rect.width;
-    const sy = runnerCanvas.height / rect.height;
-    const cx = (e.clientX - rect.left) * sx;
-    const cy = (e.clientY - rect.top) * sy;
-    for (let i = 0; i < runnerItems.length; i++) {
-      const item = runnerItems[i];
-      if (cx > item.x - item.w/2 && cx < item.x + item.w/2 && cy > item.y - item.h/2 && cy < item.y + item.h/2) {
-        runnerHandleSelect(i);
-        break;
-      }
-    }
-  }
-});
-
-function runnerHandleSelect(idx) {
-  if (runnerAnswered) return;
+function runnerSelect(idx) {
+  if (runnerAnswered || runnerOver) return;
   runnerAnswered = true;
-  const item = runnerItems[idx];
-  selectedOptIdx = idx;
-  player.x += (item.x - player.x) * 0.3;
-  player.y += (item.y - player.y) * 0.3;
-  if (item.correct) {
+  const q = runnerShuffled[runnerQIdx];
+  const correct = idx === q.correct;
+  const char = document.getElementById('runnerChar');
+
+  // 禁用所有按钮
+  document.querySelectorAll('.runner-opt').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct) {
+      btn.classList.add('correct-opt');
+    } else if (i === idx && !correct) {
+      btn.classList.add('wrong-opt');
+    }
+  });
+
+  if (correct) {
     runnerScore++;
     updateScore(10);
     updateStreak(true);
-    showRunnerKnowledge = true;
-    runnerKnowledgeTimer = 80;
+    char.textContent = '😄';
+    char.className = 'runner-character correct';
   } else {
     runnerLives--;
     updateStreak(false);
-    showRunnerKnowledge = true;
-    runnerKnowledgeTimer = 80;
+    char.textContent = '😢';
+    char.className = 'runner-character wrong';
   }
-}
 
-function drawRunnerPlayer() {
-  const glow = rCtx.createRadialGradient(player.x,player.y,0,player.x,player.y,player.size*2);
-  glow.addColorStop(0,'rgba(200,169,110,0.35)');
-  glow.addColorStop(1,'rgba(200,169,110,0)');
-  rCtx.fillStyle = glow;
-  rCtx.beginPath();
-  rCtx.arc(player.x,player.y,player.size*2,0,Math.PI*2);
-  rCtx.fill();
-  rCtx.fillStyle = '#C8963E';
-  rCtx.beginPath();
-  rCtx.arc(player.x,player.y,player.size,0,Math.PI*2);
-  rCtx.fill();
-  rCtx.fillStyle = '#FFF';
-  rCtx.beginPath();
-  rCtx.arc(player.x-6,player.y-5,5,0,Math.PI*2);
-  rCtx.arc(player.x+6,player.y-5,5,0,Math.PI*2);
-  rCtx.fill();
-  rCtx.fillStyle = '#333';
-  rCtx.beginPath();
-  rCtx.arc(player.x-6,player.y-5,2.5,0,Math.PI*2);
-  rCtx.arc(player.x+6,player.y-5,2.5,0,Math.PI*2);
-  rCtx.fill();
-  rCtx.strokeStyle = '#333';
-  rCtx.lineWidth = 1.8;
-  rCtx.beginPath();
-  rCtx.arc(player.x,player.y+3,7,0.2,Math.PI-0.2);
-  rCtx.stroke();
-}
+  document.getElementById('runnerLives').textContent = runnerLives;
+  document.getElementById('runnerScore').textContent = runnerScore;
 
-function drawRunnerItems() {
-  if (!runnerItems || runnerItems.length === 0) return;
-  runnerItems.forEach((item, idx) => {
-    const isSel = selectedOptIdx === idx;
-    const isCorrectOpt = item.correct;
-    let bgColor, strokeColor, textColor;
-    if (runnerAnswered) {
-      if (isSel) {
-        bgColor = isCorrectOpt ? '#C8E6C9' : '#FFCDD2';
-        strokeColor = isCorrectOpt ? '#4CAF50' : '#F44336';
-        textColor = isCorrectOpt ? '#1B5E20' : '#B71C1C';
-      } else if (isCorrectOpt) {
-        bgColor = '#C8E6C9'; strokeColor = '#4CAF50'; textColor = '#1B5E20';
-      } else {
-        bgColor = '#F5F5F5'; strokeColor = '#E0E0E0'; textColor = '#BDBDBD';
-      }
+  const fb = document.getElementById('runnerFeedback');
+  fb.innerHTML = `${correct ? '✅ 正确！' : '❌ 答错了！'} 正确答案：${q.opts[q.correct]}<br><span style="font-size:0.8rem;color:#9A7840">${q.exp}</span>`;
+  fb.style.display = 'block';
+  fb.style.borderLeftColor = correct ? '#4CAF50' : '#F44336';
+
+  setTimeout(() => {
+    if (runnerLives <= 0) {
+      runnerOver = true;
+      document.getElementById('runnerStartBtn').style.display = '';
+      document.getElementById('runnerQ').textContent = '游戏结束！';
+      document.getElementById('runnerTag').textContent = '';
     } else {
-      bgColor = '#FFFFFF'; strokeColor = '#C8963E'; textColor = '#3D2914';
+      runnerQIdx++;
+      nextRunnerQuestion();
     }
-    rCtx.fillStyle = bgColor;
-    rCtx.strokeStyle = strokeColor;
-    rCtx.lineWidth = isSel ? 3 : 2;
-    rCtx.beginPath();
-    rCtx.roundRect(item.x-item.w/2,item.y-item.h/2,item.w,item.h,12);
-    rCtx.fill();
-    rCtx.stroke();
-    // 选项字母
-    rCtx.fillStyle = strokeColor;
-    rCtx.font = 'bold 14px Microsoft YaHei';
-    rCtx.textAlign = 'center';
-    rCtx.fillText('ABCD'[idx]+'.',item.x,item.y+5);
-    // 选项文字
-    rCtx.fillStyle = textColor;
-    rCtx.font = 'bold 15px Microsoft YaHei';
-    rCtx.textAlign = 'center';
-    rCtx.fillText(item.text,item.x+14,item.y+5);
-  });
+  }, 2000);
 }
 
-function drawRunnerQuestion() {
-  if (!runnerQuestion) return;
-  rCtx.fillStyle = 'rgba(255,255,255,0.97)';
-  rCtx.strokeStyle = '#C8963E';
-  rCtx.lineWidth = 2;
-  rCtx.beginPath();
-  rCtx.roundRect(20,210,640,95,12);
-  rCtx.fill();
-  rCtx.stroke();
-  rCtx.fillStyle = '#3D2914';
-  rCtx.font = 'bold 14px Microsoft YaHei';
-  rCtx.textAlign = 'center';
-  rCtx.fillText(`第 ${runnerQIdx+1} 题：${runnerQuestion.q}`,runnerCanvas.width/2,240);
-  rCtx.font = '12px Microsoft YaHei';
-  rCtx.fillStyle = '#9A7840';
-  rCtx.fillText(`点击上方选项 | ❤️ ${runnerLives} | 得分 ${runnerScore}`,runnerCanvas.width/2,290);
-  // 分隔线
-  rCtx.strokeStyle = 'rgba(200,169,110,0.4)';
-  rCtx.lineWidth = 1.5;
-  rCtx.setLineDash([6,4]);
-  rCtx.beginPath();
-  rCtx.moveTo(20,205);
-  rCtx.lineTo(660,205);
-  rCtx.stroke();
-  rCtx.setLineDash([]);
+function winRunner() {
+  runnerOver = true;
+  document.getElementById('runnerChar').textContent = '🏆';
+  document.getElementById('runnerChar').className = 'runner-character correct';
+  document.getElementById('runnerStartBtn').style.display = '';
+  document.getElementById('runnerQ').textContent = '恭喜通关！';
+  document.getElementById('runnerTag').textContent = '';
+  showResult('runner');
 }
-
-function drawRunnerKnowledge() {
-  if (!showRunnerKnowledge) return;
-  if (!runnerQuestion || !runnerItems || runnerItems.length === 0) return;
-  const isCorrect = selectedOptIdx >= 0 && runnerItems[selectedOptIdx] && runnerItems[selectedOptIdx].correct;
-  const correctOpt = runnerQuestion ? runnerQuestion.opts[runnerQuestion.correct] : '';
-  rCtx.fillStyle = 'rgba(255,248,220,0.97)';
-  rCtx.strokeStyle = isCorrect ? '#4CAF50' : '#F44336';
-  rCtx.lineWidth = 3;
-  rCtx.beginPath();
-  rCtx.roundRect(60,325,560,55,14);
-  rCtx.fill();
-  rCtx.stroke();
-  rCtx.fillStyle = isCorrect ? '#1B5E20' : '#B71C1C';
-  rCtx.font = 'bold 17px Microsoft YaHei';
-  rCtx.textAlign = 'center';
-  rCtx.fillText((isCorrect?'✅ 正确！':'❌ 答错了！')+' 正确答案：'+correctOpt,runnerCanvas.width/2,352);
-  rCtx.font = '12px Microsoft YaHei';
-  rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('1秒后继续...',runnerCanvas.width/2,370);
-}
-
-function drawRunnerStartScreen() {
-  const grad = rCtx.createLinearGradient(0,0,0,runnerCanvas.height);
-  grad.addColorStop(0,'#FDFAF2');
-  grad.addColorStop(1,'#F5E6C8');
-  rCtx.fillStyle = grad;
-  rCtx.fillRect(0,0,runnerCanvas.width,runnerCanvas.height);
-  for (let i = 0; i < 6; i++) {
-    rCtx.fillStyle = `rgba(200,169,110,${0.08+i*0.03})`;
-    rCtx.beginPath();
-    rCtx.arc(runnerCanvas.width/2,runnerCanvas.height/2,60+i*35,0,Math.PI*2);
-    rCtx.fill();
-  }
-  rCtx.fillStyle = '#8B6914';
-  rCtx.font = 'bold 30px Microsoft YaHei';
-  rCtx.textAlign = 'center';
-  rCtx.fillText('🏃 淀粉知识大作战',runnerCanvas.width/2,145);
-  rCtx.font = '17px Microsoft YaHei';
-  rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('边玩边学淀粉知识！',runnerCanvas.width/2,180);
-  rCtx.font = '14px Microsoft YaHei';
-  rCtx.fillStyle = '#8B6914';
-  ['1. 点击正确答案 +10分','2. 答错 ❤️-1','3. 通关5道题即获胜！'].forEach((r,i) => rCtx.fillText(r,runnerCanvas.width/2,235+i*28));
-  rCtx.fillStyle = '#C8963E';
-  rCtx.font = 'bold 20px Microsoft YaHei';
-  rCtx.fillText('点击画布开始游戏！',runnerCanvas.width/2,375);
-}
-
-function drawRunnerGameOver() {
-  rCtx.fillStyle = 'rgba(30,20,10,0.88)';
-  rCtx.fillRect(0,0,runnerCanvas.width,runnerCanvas.height);
-  rCtx.fillStyle = '#F5E6C8';
-  rCtx.font = 'bold 38px Microsoft YaHei';
-  rCtx.textAlign = 'center';
-  rCtx.fillText('游戏结束',runnerCanvas.width/2,runnerCanvas.height/2-35);
-  rCtx.fillStyle = '#FFF';
-  rCtx.font = '22px Microsoft YaHei';
-  rCtx.fillText('📊 最终得分：'+totalScore,runnerCanvas.width/2,runnerCanvas.height/2+15);
-  rCtx.font = '15px Microsoft YaHei';
-  rCtx.fillStyle = '#C8A020';
-  rCtx.fillText('按 R 键重新挑战',runnerCanvas.width/2,runnerCanvas.height/2+65);
-}
-
-function drawRunnerStars() {
-  if (!runnerStars || runnerStars.length === 0) return;
-  runnerStars.forEach(star => {
-    rCtx.fillStyle = 'rgba(200,169,110,0.5)';
-    rCtx.beginPath();
-    rCtx.arc(star.x,star.y,star.size,0,Math.PI*2);
-    rCtx.fill();
-    star.y += star.speed;
-    if (star.y > runnerCanvas.height) { star.y = 0; star.x = Math.random()*runnerCanvas.width; }
-  });
-}
-
-function runnerUpdateLoop() {
-  if (!runnerStarted || runnerOver) return;
-  // 玩家平滑移回底部中间
-  player.x += (340 - player.x) * 0.08;
-  player.y += (460 - player.y) * 0.08;
-
-  if (showRunnerKnowledge) {
-    runnerKnowledgeTimer--;
-    if (runnerKnowledgeTimer <= 0) {
-      showRunnerKnowledge = false;
-      runnerKnowledgeTimer = 0;
-      if (runnerLives > 0) {
-        runnerQIdx++;
-        if (runnerQIdx < runnerShuffled.length) {
-          nextRunnerQuestion();
-        } else {
-          winRunner();
-        }
-      } else {
-        runnerOver = true;
-      }
-    }
-  }
-  if (runnerLives <= 0) runnerOver = true;
-}
-
-function gameLoopRunner() {
-  if (!runnerStars || runnerStars.length === 0) { requestAnimationFrame(gameLoopRunner); return; }
-  rCtx.clearRect(0,0,runnerCanvas.width,runnerCanvas.height);
-  const grad = rCtx.createLinearGradient(0,0,0,runnerCanvas.height);
-  grad.addColorStop(0,'#FDFAF2');
-  grad.addColorStop(1,'#F5E6C8');
-  rCtx.fillStyle = grad;
-  rCtx.fillRect(0,0,runnerCanvas.width,runnerCanvas.height);
-
-  drawRunnerStars();
-
-  if (!runnerStarted) {
-    drawRunnerStartScreen();
-  } else if (runnerOver) {
-    drawRunnerQuestion();
-    drawRunnerItems();
-    drawRunnerPlayer();
-    drawRunnerGameOver();
-  } else {
-    // 分隔线
-    rCtx.strokeStyle = 'rgba(200,169,110,0.35)';
-    rCtx.lineWidth = 1.5;
-    rCtx.setLineDash([6,4]);
-    rCtx.beginPath();
-    rCtx.moveTo(20,205);
-    rCtx.lineTo(660,205);
-    rCtx.stroke();
-    rCtx.setLineDash([]);
-    drawRunnerQuestion();
-    drawRunnerItems();
-    drawRunnerPlayer();
-    drawRunnerKnowledge();
-    runnerUpdateLoop();
-  }
-
-  requestAnimationFrame(gameLoopRunner);
-}
-
-// ===== 结果页 =====
 function showResult(mode) {
   let emoji, title, badge, detail;
   if (mode === 'quiz') {
@@ -839,8 +692,6 @@ function showResult(mode) {
   switchMode('result');
 }
 
-// 启动跑酷循环
-gameLoopRunner();
 </script>
 </body>
 </html>
