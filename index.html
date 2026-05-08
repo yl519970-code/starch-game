@@ -983,7 +983,7 @@ function onDrop(e, zone) {
 
 function finishClassify() { showResult('classify'); }
 
-// ===== 跑酷游戏 =====
+// ===== 跑酷游戏（点击选择 + 角色视觉反馈）=====
 const runnerCanvas = document.getElementById('runnerCanvas');
 const rCtx = runnerCanvas.getContext('2d');
 
@@ -1000,7 +1000,16 @@ const runnerQuestions = [
   { q: "淀粉老化后会怎样？", opts: ["更易消化", "变得更硬", "变成水", "燃烧"], correct: 1 },
 ];
 
-let player = { x: 340, y: 350, size: 24, speed: 5 };
+// 4选项的位置（2x2网格，与玩家区域完全分离）
+const OPTION_POSITIONS = [
+  { x: 170, y: 105 },  // 左上
+  { x: 510, y: 105 },  // 右上
+  { x: 170, y: 200 },  // 左下
+  { x: 510, y: 200 },  // 右下
+];
+const OPTION_W = 230;
+const OPTION_H = 70;
+
 let runnerItems = [];
 let runnerQuestion = null;
 let runnerQIdx = 0;
@@ -1012,21 +1021,31 @@ let showRunnerKnowledge = false;
 let runnerKnowledgeTimer = 0;
 let runnerShuffled = [];
 let runnerStars = [];
+let player = { x: 340, y: 350, size: 24, speed: 4 };
+let playerTarget = { x: 340, y: 350 };
+let selectedOptIdx = -1; // 当前选中的选项（用于角色移动）
+let runnerAnswered = false;
 
-for (let i = 0; i < 40; i++) {
-  runnerStars.push({ x: Math.random() * runnerCanvas.width, y: Math.random() * runnerCanvas.height, size: Math.random() * 1.5 + 0.5, speed: Math.random() * 1 + 0.3 });
+for (let i = 0; i < 35; i++) {
+  runnerStars.push({
+    x: Math.random() * runnerCanvas.width,
+    y: Math.random() * runnerCanvas.height,
+    size: Math.random() * 1.5 + 0.5,
+    speed: Math.random() * 0.8 + 0.3
+  });
 }
 
 let runnerKeys = {};
 document.addEventListener('keydown', e => {
   runnerKeys[e.key] = true;
-  if (e.key === ' ' && !runnerStarted) startRunnerGame();
+  if (e.key === ' ' && !runnerStarted && !runnerOver) startRunnerGame();
   if (e.key === 'r' && runnerOver) resetRunner();
 });
 document.addEventListener('keyup', e => runnerKeys[e.key] = false);
 
 function startRunner() {
-  player = { x: 340, y: 350, size: 24, speed: 5 };
+  player = { x: 340, y: 350, size: 24, speed: 4 };
+  playerTarget = { x: 340, y: 350 };
   runnerItems = [];
   runnerQuestion = null;
   runnerQIdx = 0;
@@ -1036,13 +1055,16 @@ function startRunner() {
   runnerOver = false;
   showRunnerKnowledge = false;
   runnerKnowledgeTimer = 0;
+  runnerAnswered = false;
+  selectedOptIdx = -1;
   runnerShuffled = shuffle([...runnerQuestions]).slice(0, 5);
 }
 
 function startRunnerGame() {
   runnerStarted = true;
   runnerOver = false;
-  runnerRunnerLoop();
+  runnerAnswered = false;
+  selectedOptIdx = -1;
   nextRunnerQuestion();
 }
 
@@ -1051,20 +1073,28 @@ function resetRunner() {
 }
 
 function nextRunnerQuestion() {
+  runnerAnswered = false;
+  selectedOptIdx = -1;
   if (runnerQIdx >= runnerShuffled.length) { winRunner(); return; }
   runnerQuestion = runnerShuffled[runnerQIdx];
   createRunnerItems();
+  // 重置玩家到中间
+  playerTarget = { x: 340, y: 350 };
 }
 
 function createRunnerItems() {
   runnerItems = [];
-  const positions = [
-    { x: 100, y: 120 }, { x: 340, y: 120 }, { x: 580, y: 120 },
-    { x: 100, y: 230 }, { x: 340, y: 230 }, { x: 580, y: 230 },
-  ];
-  const shuffledPos = shuffle([...positions]);
+  const shuffledPos = shuffle([...OPTION_POSITIONS]);
   runnerQuestion.options.forEach((opt, i) => {
-    runnerItems.push({ x: shuffledPos[i].x, y: shuffledPos[i].y, text: opt, correct: i === runnerQuestion.correct, collected: false });
+    runnerItems.push({
+      x: shuffledPos[i].x,
+      y: shuffledPos[i].y,
+      text: opt,
+      correct: i === runnerQuestion.correct,
+      collected: false,
+      w: OPTION_W,
+      h: OPTION_H
+    });
   });
 }
 
@@ -1073,182 +1103,266 @@ function winRunner() {
   showResult('runner');
 }
 
+// 点击检测（精确，必须点在选项区域内）
+function runnerCanvasClick(e) {
+  if (!runnerStarted || runnerOver || runnerAnswered) return;
+  const rect = runnerCanvas.getBoundingClientRect();
+  const scaleX = runnerCanvas.width / rect.width;
+  const scaleY = runnerCanvas.height / rect.height;
+  const clickX = (e.clientX - rect.left) * scaleX;
+  const clickY = (e.clientY - rect.top) * scaleY;
+
+  for (let i = 0; i < runnerItems.length; i++) {
+    const item = runnerItems[i];
+    const inX = clickX > item.x - item.w / 2 && clickX < item.x + item.w / 2;
+    const inY = clickY > item.y - item.h / 2 && clickY < item.y + item.h / 2;
+    if (inX && inY) {
+      runnerHandleSelect(i);
+      break;
+    }
+  }
+}
+
+runnerCanvas.addEventListener('click', runnerCanvasClick);
+
+// 点击画布开始游戏（当未开始时）
+runnerCanvas.addEventListener('click', function startOnClick(e) {
+  if (!runnerStarted && !runnerOver) {
+    startRunnerGame();
+  }
+});
+
+function runnerHandleSelect(idx) {
+  if (runnerAnswered) return;
+  runnerAnswered = true;
+  const item = runnerItems[idx];
+
+  if (item.correct) {
+    runnerScore++;
+    updateScore(10);
+    updateStreak(true);
+    selectedOptIdx = idx;
+    // 玩家移到正确选项
+    playerTarget = { x: item.x, y: item.y };
+    showRunnerKnowledge = true;
+    runnerKnowledgeTimer = 100;
+  } else {
+    runnerLives--;
+    updateStreak(false);
+    selectedOptIdx = idx;
+    // 玩家移到错误选项
+    playerTarget = { x: item.x, y: item.y };
+    showRunnerKnowledge = true;
+    runnerKnowledgeTimer = 100;
+  }
+}
+
 function drawRunnerPlayer() {
+  // 光晕
+  const glow = rCtx.createRadialGradient(player.x, player.y, 0, player.x, player.y, player.size * 2);
+  glow.addColorStop(0, 'rgba(200,169,110,0.3)');
+  glow.addColorStop(1, 'rgba(200,169,110,0)');
+  rCtx.fillStyle = glow;
+  rCtx.beginPath();
+  rCtx.arc(player.x, player.y, player.size * 2, 0, Math.PI * 2);
+  rCtx.fill();
+  // 身体
   rCtx.fillStyle = '#C8963E';
   rCtx.beginPath();
   rCtx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
   rCtx.fill();
+  // 眼睛
   rCtx.fillStyle = '#FFF';
   rCtx.beginPath();
-  rCtx.arc(player.x - 6, player.y - 4, 5, 0, Math.PI * 2);
-  rCtx.arc(player.x + 6, player.y - 4, 5, 0, Math.PI * 2);
+  rCtx.arc(player.x - 6, player.y - 5, 5, 0, Math.PI * 2);
+  rCtx.arc(player.x + 6, player.y - 5, 5, 0, Math.PI * 2);
   rCtx.fill();
   rCtx.fillStyle = '#333';
   rCtx.beginPath();
-  rCtx.arc(player.x - 6, player.y - 4, 2.5, 0, Math.PI * 2);
-  rCtx.arc(player.x + 6, player.y - 4, 2.5, 0, Math.PI * 2);
+  rCtx.arc(player.x - 6, player.y - 5, 2.5, 0, Math.PI * 2);
+  rCtx.arc(player.x + 6, player.y - 5, 2.5, 0, Math.PI * 2);
   rCtx.fill();
+  // 嘴
   rCtx.strokeStyle = '#333';
   rCtx.lineWidth = 1.8;
   rCtx.beginPath();
-  rCtx.arc(player.x, player.y + 4, 8, 0.2, Math.PI - 0.2);
+  rCtx.arc(player.x, player.y + 3, 7, 0.2, Math.PI - 0.2);
   rCtx.stroke();
 }
 
 function drawRunnerItems() {
-  runnerItems.forEach(item => {
+  runnerItems.forEach((item, idx) => {
     if (item.collected) return;
-    rCtx.fillStyle = '#FFF8EE';
-    rCtx.strokeStyle = '#C8963E';
-    rCtx.lineWidth = 2;
+    const isSelected = selectedOptIdx === idx;
+    const isCorrectOpt = item.correct;
+
+    let bgColor, strokeColor, textColor;
+    if (runnerAnswered) {
+      if (isSelected) {
+        bgColor = isCorrectOpt ? '#C8E6C9' : '#FFCDD2';
+        strokeColor = isCorrectOpt ? '#4CAF50' : '#F44336';
+        textColor = isCorrectOpt ? '#2E7D32' : '#C62828';
+      } else if (isCorrectOpt) {
+        bgColor = '#C8E6C9';
+        strokeColor = '#4CAF50';
+        textColor = '#2E7D32';
+      } else {
+        bgColor = '#FFF8EE';
+        strokeColor = '#E0D0B0';
+        textColor = '#999';
+      }
+    } else {
+      bgColor = '#FFF8EE';
+      strokeColor = '#C8963E';
+      textColor = '#3D2914';
+    }
+
+    rCtx.fillStyle = bgColor;
+    rCtx.strokeStyle = strokeColor;
+    rCtx.lineWidth = isSelected ? 3 : 2;
     rCtx.beginPath();
-    rCtx.roundRect(item.x - 55, item.y - 28, 110, 56, 10);
+    rCtx.roundRect(item.x - item.w / 2, item.y - item.h / 2, item.w, item.h, 12);
     rCtx.fill();
     rCtx.stroke();
-    rCtx.fillStyle = '#3D2914';
-    rCtx.font = 'bold 13px Microsoft YaHei';
+
+    // 选项字母
+    const letter = 'ABCD'[idx];
+    rCtx.fillStyle = strokeColor;
+    rCtx.font = 'bold 14px Microsoft YaHei';
+    rCtx.textAlign = 'left';
+    rCtx.fillText(letter + '.', item.x - item.w / 2 + 14, item.y + 5);
+
+    rCtx.fillStyle = textColor;
+    rCtx.font = 'bold 15px Microsoft YaHei';
     rCtx.textAlign = 'center';
-    rCtx.fillText(item.text, item.x, item.y + 5);
+    rCtx.fillText(item.text, item.x + 18, item.y + 5);
   });
 }
 
 function drawRunnerQuestion() {
   if (!runnerQuestion) return;
-  rCtx.fillStyle = 'rgba(255,255,255,0.95)';
+  rCtx.fillStyle = 'rgba(255,255,255,0.97)';
   rCtx.strokeStyle = '#C8963E';
   rCtx.lineWidth = 2;
   rCtx.beginPath();
-  rCtx.roundRect(30, 340, 620, 75, 10);
+  rCtx.roundRect(20, 310, 640, 65, 12);
   rCtx.fill();
   rCtx.stroke();
   rCtx.fillStyle = '#3D2914';
-  rCtx.font = 'bold 15px Microsoft YaHei';
+  rCtx.font = 'bold 14px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText(`第 ${runnerQIdx + 1} 题：${runnerQuestion.q}`, runnerCanvas.width / 2, 368);
+  rCtx.fillText(`第 ${runnerQIdx + 1} 题：${runnerQuestion.q}`, runnerCanvas.width / 2, 337);
   rCtx.font = '12px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('方向键移动，碰到正确答案收集！按空格开始', runnerCanvas.width / 2, 400);
+  rCtx.fillText('点击选项收集答案 | ❤️ ' + runnerLives + '  | 得分 ' + runnerScore, runnerCanvas.width / 2, 362);
 }
 
 function drawRunnerKnowledge() {
   if (!showRunnerKnowledge) return;
+  const isCorrect = selectedOptIdx >= 0 && runnerItems[selectedOptIdx] && runnerItems[selectedOptIdx].correct;
+  const correctOpt = runnerQuestion ? runnerQuestion.opts[runnerQuestion.correct] : '';
+
   rCtx.fillStyle = 'rgba(255,248,220,0.97)';
-  rCtx.strokeStyle = '#C8963E';
-  rCtx.lineWidth = 2.5;
+  rCtx.strokeStyle = isCorrect ? '#4CAF50' : '#F44336';
+  rCtx.lineWidth = 3;
   rCtx.beginPath();
-  rCtx.roundRect(80, 160, 520, 70, 14);
+  rCtx.roundRect(60, 255, 560, 55, 14);
   rCtx.fill();
   rCtx.stroke();
-  rCtx.fillStyle = '#5A3A00';
-  rCtx.font = '15px Microsoft YaHei';
+
+  rCtx.fillStyle = isCorrect ? '#2E7D32' : '#C62828';
+  rCtx.font = 'bold 16px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText('✅ 答对了！淀粉知识：' + runnerQuestion.opts[runnerQuestion.correct] + ' 是正确答案！', runnerCanvas.width / 2, 193);
+  rCtx.fillText(
+    (isCorrect ? '✅ 正确！' : '❌ 答错了！') + ' 正确答案：' + correctOpt,
+    runnerCanvas.width / 2, 284
+  );
   rCtx.font = '12px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('2秒后自动继续...', runnerCanvas.width / 2, 218);
+  rCtx.fillText('1秒后继续...', runnerCanvas.width / 2, 302);
 }
 
 function drawRunnerStartScreen() {
-  rCtx.fillStyle = 'rgba(255,253,246,0.95)';
+  // 背景
+  const grad = rCtx.createLinearGradient(0, 0, 0, runnerCanvas.height);
+  grad.addColorStop(0, '#FDFAF2');
+  grad.addColorStop(1, '#F5E6C8');
+  rCtx.fillStyle = grad;
   rCtx.fillRect(0, 0, runnerCanvas.width, runnerCanvas.height);
-  // Draw decorative circles
-  for (let i = 0; i < 5; i++) {
-    rCtx.fillStyle = `rgba(245,230,200,${0.15 + i * 0.05})`;
+  // 装饰圆
+  for (let i = 0; i < 6; i++) {
+    rCtx.fillStyle = `rgba(200,169,110,${0.08 + i * 0.03})`;
     rCtx.beginPath();
-    rCtx.arc(runnerCanvas.width / 2, runnerCanvas.height / 2, 80 + i * 30, 0, Math.PI * 2);
+    rCtx.arc(runnerCanvas.width / 2, runnerCanvas.height / 2, 60 + i * 35, 0, Math.PI * 2);
     rCtx.fill();
   }
   rCtx.fillStyle = '#8B6914';
-  rCtx.font = 'bold 28px Microsoft YaHei';
+  rCtx.font = 'bold 30px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText('🏃 淀粉知识大作战', runnerCanvas.width / 2, 155);
-  rCtx.font = '16px Microsoft YaHei';
+  rCtx.fillText('🏃 淀粉知识大作战', runnerCanvas.width / 2, 145);
+  rCtx.font = '17px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('边玩边学淀粉知识！', runnerCanvas.width / 2, 190);
+  rCtx.fillText('边玩边学淀粉知识！', runnerCanvas.width / 2, 180);
   rCtx.font = '14px Microsoft YaHei';
   rCtx.fillStyle = '#8B6914';
-  const rules = ['1. 控制角色收集正确答案', '2. 答对+10分，答错 ❤️-1', '3. 通关5道淀粉知识题即获胜！'];
-  rules.forEach((r, i) => rCtx.fillText(r, runnerCanvas.width / 2, 240 + i * 26));
+  const rules = ['1. 点击正确答案 +10分', '2. 答错 ❤️-1', '3. 通关5道题即获胜！'];
+  rules.forEach((r, i) => rCtx.fillText(r, runnerCanvas.width / 2, 235 + i * 28));
   rCtx.fillStyle = '#C8963E';
-  rCtx.font = 'bold 18px Microsoft YaHei';
-  rCtx.fillText('按 空格键 开始游戏！', runnerCanvas.width / 2, 380);
+  rCtx.font = 'bold 20px Microsoft YaHei';
+  rCtx.fillText('按 空格键 或 点击画布 开始！', runnerCanvas.width / 2, 375);
 }
 
 function drawRunnerGameOver() {
-  rCtx.fillStyle = 'rgba(30,20,10,0.85)';
+  rCtx.fillStyle = 'rgba(30,20,10,0.88)';
   rCtx.fillRect(0, 0, runnerCanvas.width, runnerCanvas.height);
   rCtx.fillStyle = '#F5E6C8';
-  rCtx.font = 'bold 36px Microsoft YaHei';
+  rCtx.font = 'bold 38px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText('游戏结束', runnerCanvas.width / 2, runnerCanvas.height / 2 - 30);
+  rCtx.fillText('游戏结束', runnerCanvas.width / 2, runnerCanvas.height / 2 - 35);
   rCtx.fillStyle = '#FFF';
   rCtx.font = '22px Microsoft YaHei';
-  rCtx.fillText('📊 最终得分：' + totalScore, runnerCanvas.width / 2, runnerCanvas.height / 2 + 20);
+  rCtx.fillText('📊 最终得分：' + totalScore, runnerCanvas.width / 2, runnerCanvas.height / 2 + 15);
   rCtx.font = '15px Microsoft YaHei';
   rCtx.fillStyle = '#C8A020';
-  rCtx.fillText('按 R 键重新挑战', runnerCanvas.width / 2, runnerCanvas.height / 2 + 70);
+  rCtx.fillText('按 R 键重新挑战', runnerCanvas.width / 2, runnerCanvas.height / 2 + 65);
 }
 
 function drawRunnerStars() {
   runnerStars.forEach(star => {
-    rCtx.fillStyle = 'rgba(245,230,200,0.6)';
+    rCtx.fillStyle = 'rgba(200,169,110,0.5)';
     rCtx.beginPath();
     rCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
     rCtx.fill();
     star.y += star.speed;
-    if (star.y > runnerCanvas.height) { star.y = 0; star.x = Math.random() * runnerCanvas.width; }
-  });
-}
-
-function checkRunnerCollision() {
-  runnerItems.forEach(item => {
-    if (item.collected) return;
-    const dist = Math.sqrt(Math.pow(player.x - item.x, 2) + Math.pow(player.y - item.y, 2));
-    if (dist < player.size + 30) {
-      item.collected = true;
-      if (item.correct) {
-        runnerScore++;
-        updateScore(10);
-        updateStreak(true);
-        showRunnerKnowledge = true;
-        runnerKnowledgeTimer = 120;
-      } else {
-        runnerLives--;
-        updateStreak(false);
-      }
-      const remaining = runnerItems.filter(i => !i.collected);
-      if (remaining.length === 0 || runnerLives <= 0) {
-        if (runnerLives > 0) {
-          runnerQIdx++;
-          showRunnerKnowledge = true;
-          runnerKnowledgeTimer = 120;
-        }
-      }
+    if (star.y > runnerCanvas.height) {
+      star.y = 0;
+      star.x = Math.random() * runnerCanvas.width;
     }
   });
 }
 
-function runnerRunnerLoop() {
+function runnerUpdateLoop() {
   if (!runnerStarted || runnerOver) return;
 
-  if (runnerKeys['ArrowLeft'] && player.x > 50) player.x -= player.speed;
-  if (runnerKeys['ArrowRight'] && player.x < runnerCanvas.width - 50) player.x += player.speed;
-  if (runnerKeys['ArrowUp'] && player.y > 80) player.y -= player.speed;
-  if (runnerKeys['ArrowDown'] && player.y < runnerCanvas.height - 50) player.y += player.speed;
-
-  checkRunnerCollision();
+  // 玩家平滑移动到目标
+  const dx = playerTarget.x - player.x;
+  const dy = playerTarget.y - player.y;
+  player.x += dx * 0.12;
+  player.y += dy * 0.12;
 
   if (showRunnerKnowledge) {
     runnerKnowledgeTimer--;
     if (runnerKnowledgeTimer <= 0) {
       showRunnerKnowledge = false;
-      if (runnerLives > 0 && runnerQIdx < runnerShuffled.length) {
+      runnerKnowledgeTimer = 0;
+      if (runnerLives > 0) {
+        runnerQIdx++;
         if (runnerQIdx < runnerShuffled.length) {
           nextRunnerQuestion();
         } else {
           winRunner();
         }
-      } else if (runnerLives <= 0) {
+      } else {
         runnerOver = true;
       }
     }
@@ -1259,7 +1373,8 @@ function runnerRunnerLoop() {
 
 function gameLoopRunner() {
   rCtx.clearRect(0, 0, runnerCanvas.width, runnerCanvas.height);
-  rCtx.fillStyle = 'linear-gradient(180deg, #FDFAF2, #F5E6C8)';
+
+  // 背景渐变
   const grad = rCtx.createLinearGradient(0, 0, 0, runnerCanvas.height);
   grad.addColorStop(0, '#FDFAF2');
   grad.addColorStop(1, '#F5E6C8');
@@ -1271,13 +1386,16 @@ function gameLoopRunner() {
   if (!runnerStarted) {
     drawRunnerStartScreen();
   } else if (runnerOver) {
+    drawRunnerQuestion();
+    drawRunnerItems();
+    drawRunnerPlayer();
     drawRunnerGameOver();
   } else {
     drawRunnerQuestion();
     drawRunnerItems();
     drawRunnerPlayer();
     drawRunnerKnowledge();
-    runnerRunnerLoop();
+    runnerUpdateLoop();
   }
 
   requestAnimationFrame(gameLoopRunner);
