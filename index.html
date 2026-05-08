@@ -324,7 +324,7 @@ function startQuiz() {
 function renderQuiz() {
   if (!quizShuffled || quizShuffled.length === 0) return;
   const q = quizShuffled[quizIdx];
-  if (!q) return;
+  if (!q || !q.opts) return;
 
   let dots = '';
   for (let i = 0; i < quizShuffled.length; i++) {
@@ -506,6 +506,7 @@ function nextRunnerQuestion() {
 
 function createRunnerItems() {
   runnerItems = [];
+  if (!runnerQuestion || !runnerQuestion.options) return;
   const shuffledPos = shuffle(OPTION_POSITIONS);
   runnerQuestion.options.forEach((opt, i) => {
     runnerItems.push({x:shuffledPos[i].x,y:shuffledPos[i].y,text:opt,correct:i===runnerQuestion.correct,w:OPTION_W,h:OPTION_H});
@@ -588,6 +589,7 @@ function drawRunnerPlayer() {
 }
 
 function drawRunnerItems() {
+  if (!runnerItems || runnerItems.length === 0) return;
   runnerItems.forEach((item, idx) => {
     const isSel = selectedOptIdx === idx;
     const isCorrectOpt = item.correct;
@@ -643,6 +645,7 @@ function drawRunnerQuestion() {
 
 function drawRunnerKnowledge() {
   if (!showRunnerKnowledge) return;
+  if (!runnerQuestion || !runnerItems || runnerItems.length === 0) return;
   const isCorrect = selectedOptIdx >= 0 && runnerItems[selectedOptIdx] && runnerItems[selectedOptIdx].correct;
   const correctOpt = runnerQuestion ? runnerQuestion.opts[runnerQuestion.correct] : '';
   rCtx.fillStyle = 'rgba(255,248,220,0.97)';
@@ -704,7 +707,7 @@ function drawRunnerGameOver() {
 }
 
 function drawRunnerStars() {
-  if (!runnerStars) return;
+  if (!runnerStars || runnerStars.length === 0) return;
   runnerStars.forEach(star => {
     rCtx.fillStyle = 'rgba(200,169,110,0.5)';
     rCtx.beginPath();
@@ -742,7 +745,7 @@ function runnerUpdateLoop() {
 }
 
 function gameLoopRunner() {
-  if (!runnerStars) return;
+  if (!runnerStars || runnerStars.length === 0) { requestAnimationFrame(gameLoopRunner); return; }
   rCtx.clearRect(0,0,runnerCanvas.width,runnerCanvas.height);
   const grad = rCtx.createLinearGradient(0,0,0,runnerCanvas.height);
   grad.addColorStop(0,'#FDFAF2');
