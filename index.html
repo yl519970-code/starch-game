@@ -224,7 +224,7 @@
     <div class="screen" id="screen-runner">
       <div class="card runner-card">
         <div class="runner-instructions">🎮 点击正确答案，角色会自动移动过去！按空格键或点击画布开始</div>
-        <canvas id="runnerCanvas" width="680" height="420"></canvas>
+        <canvas id="runnerCanvas" width="680" height="500"></canvas>
       </div>
     </div>
     <!-- 结果页 -->
@@ -421,12 +421,12 @@ function finishClassify() { showResult('classify'); }
 const runnerCanvas = document.getElementById('runnerCanvas');
 const rCtx = runnerCanvas.getContext('2d');
 
-// 必须在所有初始化之前
+// 选项位置：画布上方，y=65(第一行) 和 y=145(第二行)，题目和玩家在最下方
 const OPTION_POSITIONS = [
-  {x:170,y:105},{x:510,y:105},{x:170,y:200},{x:510,y:200}
+  {x:170,y:65},{x:510,y:65},{x:170,y:145},{x:510,y:145}
 ];
 const OPTION_W = 230;
-const OPTION_H = 70;
+const OPTION_H = 65;
 
 const runnerQuestions = [
   {q:"淀粉主要存在于哪种食物？",opts:["苹果","米饭","牛肉","牛奶"],correct:1},
@@ -452,7 +452,7 @@ let showRunnerKnowledge = false;
 let runnerKnowledgeTimer = 0;
 let runnerShuffled = [];
 let runnerStars = [];
-let player = {x:340,y:350,size:24,speed:4};
+let player = {x:340,y:420,size:24,speed:4};
 let selectedOptIdx = -1;
 let runnerAnswered = false;
 
@@ -471,7 +471,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => runnerKeys[e.key] = false);
 
 function startRunner() {
-  player = {x:340,y:350,size:24,speed:4};
+  player = {x:340,y:420,size:24,speed:4};
   runnerItems = [];
   runnerQuestion = null;
   runnerQIdx = 0;
@@ -499,6 +499,7 @@ function resetRunner() { startRunner(); }
 function nextRunnerQuestion() {
   runnerAnswered = false;
   selectedOptIdx = -1;
+  player = {x:340,y:420,size:24,speed:4};
   if (runnerQIdx >= runnerShuffled.length) { winRunner(); return; }
   runnerQuestion = runnerShuffled[runnerQIdx];
   createRunnerItems();
@@ -515,27 +516,26 @@ function createRunnerItems() {
 
 function winRunner() { runnerOver = true; showResult('runner'); }
 
-// 点击检测
-function runnerCanvasClick(e) {
-  if (!runnerStarted || runnerOver || runnerAnswered || currentMode !== 'runner') return;
-  const rect = runnerCanvas.getBoundingClientRect();
-  const sx = runnerCanvas.width / rect.width;
-  const sy = runnerCanvas.height / rect.height;
-  const cx = (e.clientX - rect.left) * sx;
-  const cy = (e.clientY - rect.top) * sy;
-  for (let i = 0; i < runnerItems.length; i++) {
-    const item = runnerItems[i];
-    if (cx > item.x - item.w/2 && cx < item.x + item.w/2 && cy > item.y - item.h/2 && cy < item.y + item.h/2) {
-      runnerHandleSelect(i);
-      break;
+// 点击画布：未开始则开始游戏，已开始则处理选项点击
+runnerCanvas.addEventListener('click', function canvasClickHandler(e) {
+  if (!runnerStarted && !runnerOver && currentMode === 'runner') {
+    // 还未开始：开始游戏
+    startRunnerGame();
+  } else if (runnerStarted && !runnerOver && !runnerAnswered && currentMode === 'runner') {
+    // 游戏进行中：处理选项点击
+    const rect = runnerCanvas.getBoundingClientRect();
+    const sx = runnerCanvas.width / rect.width;
+    const sy = runnerCanvas.height / rect.height;
+    const cx = (e.clientX - rect.left) * sx;
+    const cy = (e.clientY - rect.top) * sy;
+    for (let i = 0; i < runnerItems.length; i++) {
+      const item = runnerItems[i];
+      if (cx > item.x - item.w/2 && cx < item.x + item.w/2 && cy > item.y - item.h/2 && cy < item.y + item.h/2) {
+        runnerHandleSelect(i);
+        break;
+      }
     }
   }
-}
-
-runnerCanvas.addEventListener('click', runnerCanvasClick);
-// 点击画布开始游戏
-runnerCanvas.addEventListener('click', function startClick(e) {
-  if (!runnerStarted && !runnerOver && currentMode === 'runner') startRunnerGame();
 });
 
 function runnerHandleSelect(idx) {
@@ -631,16 +631,16 @@ function drawRunnerQuestion() {
   rCtx.strokeStyle = '#C8963E';
   rCtx.lineWidth = 2;
   rCtx.beginPath();
-  rCtx.roundRect(20,310,640,65,12);
+  rCtx.roundRect(20,390,640,60,12);
   rCtx.fill();
   rCtx.stroke();
   rCtx.fillStyle = '#3D2914';
-  rCtx.font = 'bold 14px Microsoft YaHei';
+  rCtx.font = 'bold 13px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText(`第 ${runnerQIdx+1} 题：${runnerQuestion.q}`,runnerCanvas.width/2,337);
+  rCtx.fillText(`第 ${runnerQIdx+1} 题：${runnerQuestion.q}`,runnerCanvas.width/2,412);
   rCtx.font = '12px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText(`点击选项收集答案 | ❤️ ${runnerLives} | 得分 ${runnerScore}`,runnerCanvas.width/2,362);
+  rCtx.fillText(`点击上方选项收集答案 | ❤️ ${runnerLives} | 得分 ${runnerScore}`,runnerCanvas.width/2,438);
 }
 
 function drawRunnerKnowledge() {
@@ -652,16 +652,16 @@ function drawRunnerKnowledge() {
   rCtx.strokeStyle = isCorrect ? '#4CAF50' : '#F44336';
   rCtx.lineWidth = 3;
   rCtx.beginPath();
-  rCtx.roundRect(60,255,560,55,14);
+  rCtx.roundRect(60,240,560,55,14);
   rCtx.fill();
   rCtx.stroke();
   rCtx.fillStyle = isCorrect ? '#2E7D32' : '#C62828';
   rCtx.font = 'bold 16px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText((isCorrect?'✅ 正确！':'❌ 答错了！')+' 正确答案：'+correctOpt,runnerCanvas.width/2,284);
+  rCtx.fillText((isCorrect?'✅ 正确！':'❌ 答错了！')+' 正确答案：'+correctOpt,runnerCanvas.width/2,270);
   rCtx.font = '12px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('1秒后继续...',runnerCanvas.width/2,302);
+  rCtx.fillText('1秒后继续...',runnerCanvas.width/2,288);
 }
 
 function drawRunnerStartScreen() {
@@ -720,9 +720,9 @@ function drawRunnerStars() {
 
 function runnerUpdateLoop() {
   if (!runnerStarted || runnerOver) return;
-  // 玩家平滑移到目标
-  player.x += (340 - player.x) * 0.1;
-  player.y += (350 - player.y) * 0.1;
+  // 玩家平滑移回底部中间
+  player.x += (340 - player.x) * 0.08;
+  player.y += (420 - player.y) * 0.08;
 
   if (showRunnerKnowledge) {
     runnerKnowledgeTimer--;
