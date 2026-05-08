@@ -6,7 +6,6 @@
   <title>淀粉知识大闯关</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root {
       --starch: #F5E6C8;
       --starch-dark: #8B6914;
@@ -16,12 +15,11 @@
       --bg: #FDF8F0;
       --text: #3D2914;
       --card-bg: #FFFDF6;
-      --shadow: rgba(139, 105, 20, 0.12);
-      --shadow-lg: rgba(139, 105, 20, 0.2);
+      --shadow: rgba(139,105,20,0.12);
+      --shadow-lg: rgba(139,105,20,0.2);
     }
-
     body {
-      font-family: "PingFang SC", "Microsoft YaHei", "Georgia", serif;
+      font-family: "PingFang SC","Microsoft YaHei","Georgia",serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -30,658 +28,138 @@
       align-items: center;
       padding: 0 16px 40px;
       background-image:
-        radial-gradient(ellipse at 15% 85%, rgba(245,230,200,0.7) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 15%, rgba(200,169,110,0.25) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(245,230,200,0.15) 0%, transparent 70%);
+        radial-gradient(ellipse at 15% 85%,rgba(245,230,200,0.7) 0%,transparent 55%),
+        radial-gradient(ellipse at 85% 15%,rgba(200,169,110,0.25) 0%,transparent 50%),
+        radial-gradient(ellipse at 50% 50%,rgba(245,230,200,0.15) 0%,transparent 70%);
     }
-
     .grain-bg {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.035;
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      pointer-events: none; z-index: 0; opacity: 0.035;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
     }
-
-    /* ===== HEADER ===== */
-    .site-header {
-      width: 100%;
-      max-width: 680px;
-      text-align: center;
-      padding: 28px 0 16px;
-      z-index: 1;
-      position: relative;
-    }
-
-    .logo {
-      font-size: 0.7rem;
-      color: var(--starch-gold);
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    h1 {
-      font-size: 2rem;
-      color: var(--starch-dark);
-      font-weight: 800;
-      letter-spacing: 3px;
-      line-height: 1.3;
-    }
-
-    .subtitle {
-      font-size: 0.82rem;
-      color: #B09050;
-      margin-top: 5px;
-      letter-spacing: 1px;
-    }
-
-    /* ===== SCORE BAR ===== */
-    .score-bar {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin: 14px 0;
-      z-index: 1;
-      position: relative;
-    }
-
+    .site-header { width: 100%; max-width: 680px; text-align: center; padding: 28px 0 16px; z-index: 1; position: relative; }
+    .logo { font-size: 0.7rem; color: var(--starch-gold); letter-spacing: 5px; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
+    h1 { font-size: 2rem; color: var(--starch-dark); font-weight: 800; letter-spacing: 3px; line-height: 1.3; }
+    .subtitle { font-size: 0.82rem; color: #B09050; margin-top: 5px; letter-spacing: 1px; }
+    .score-bar { display: flex; gap: 12px; justify-content: center; margin: 14px 0; z-index: 1; position: relative; }
     .score-item {
-      background: linear-gradient(135deg, #FFF8EE, #FFF3DC);
-      border: 1.5px solid var(--starch);
-      border-radius: 50px;
-      padding: 7px 22px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--starch-dark);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      background: linear-gradient(135deg,#FFF8EE,#FFF3DC);
+      border: 1.5px solid var(--starch); border-radius: 50px;
+      padding: 7px 22px; font-size: 0.85rem; font-weight: 600;
+      color: var(--starch-dark); display: flex; align-items: center; gap: 8px;
       box-shadow: 0 2px 8px var(--shadow);
-      backdrop-filter: blur(4px);
     }
-
-    .score-item .val {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--starch-dark);
-      min-width: 24px;
-      text-align: center;
-    }
-
-    /* ===== MODE TABS ===== */
-    .mode-tabs {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 20px;
-      z-index: 1;
-      position: relative;
-    }
-
+    .score-item .val { font-size: 1.15rem; font-weight: 800; min-width: 24px; text-align: center; }
+    .mode-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; z-index: 1; position: relative; flex-wrap: wrap; }
     .tab-btn {
-      background: linear-gradient(135deg, #FFF8EE, #FFF3DC);
-      border: 1.5px solid var(--starch);
-      border-radius: 50px;
-      padding: 8px 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--starch-dark);
-      cursor: pointer;
-      transition: all 0.25s ease;
-      font-family: inherit;
-      box-shadow: 0 2px 8px var(--shadow);
-      white-space: nowrap;
+      background: linear-gradient(135deg,#FFF8EE,#FFF3DC);
+      border: 1.5px solid var(--starch); border-radius: 50px;
+      padding: 8px 20px; font-size: 0.85rem; font-weight: 600;
+      color: var(--starch-dark); cursor: pointer; transition: all 0.25s ease;
+      font-family: inherit; box-shadow: 0 2px 8px var(--shadow); white-space: nowrap;
     }
-
-    .tab-btn:hover {
-      background: var(--starch);
-      border-color: var(--starch-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px var(--shadow-lg);
-    }
-
-    .tab-btn.active {
-      background: linear-gradient(135deg, var(--starch-dark), #6B4F0A);
-      color: #FFF;
-      border-color: var(--starch-dark);
-      box-shadow: 0 4px 16px var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-
-    /* ===== APP CONTAINER ===== */
-    #app {
-      width: 100%;
-      max-width: 680px;
-      z-index: 1;
-      position: relative;
-    }
-
-    .screen {
-      display: none;
-      animation: fadeIn 0.35s ease;
-    }
-
+    .tab-btn:hover { background: var(--starch); border-color: var(--starch-dark); transform: translateY(-1px); box-shadow: 0 4px 14px var(--shadow-lg); }
+    .tab-btn.active { background: linear-gradient(135deg,var(--starch-dark),#5A3D08); color: #FFF; border-color: var(--starch-dark); box-shadow: 0 4px 16px var(--shadow-lg); transform: translateY(-2px); }
+    #app { width: 100%; max-width: 680px; z-index: 1; position: relative; }
+    .screen { display: none; animation: fadeIn 0.35s ease; }
     .screen.active { display: block; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ===== CARDS ===== */
-    .card {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 28px 28px 24px;
-      box-shadow: 0 4px 24px var(--shadow), 0 1px 3px var(--shadow);
-      border: 1.5px solid rgba(245,230,200,0.8);
-      backdrop-filter: blur(8px);
-    }
-
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: var(--card-bg); border-radius: 20px; padding: 28px 28px 24px; box-shadow: 0 4px 24px var(--shadow),0 1px 3px var(--shadow); border: 1.5px solid rgba(245,230,200,0.8); backdrop-filter: blur(8px); }
     .card + .card { margin-top: 14px; }
-
-    /* ===== START PAGE ===== */
-    .start-icon {
-      width: 88px;
-      height: 88px;
-      margin: 0 auto 18px;
-      background: linear-gradient(135deg, var(--starch), #E8D4A0);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.8rem;
-      border: 3px solid var(--starch-dark);
-      box-shadow: 0 6px 20px var(--shadow-lg), inset 0 2px 6px rgba(255,255,255,0.5);
-    }
-
-    .start-card h2 {
-      font-size: 1.3rem;
-      color: var(--starch-dark);
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    .start-card > p {
-      font-size: 0.88rem;
-      color: #9A7840;
-      line-height: 1.8;
-      margin-bottom: 6px;
-    }
-
-    .starch-facts {
-      background: linear-gradient(135deg, #FFF8EE, #FFF3DC);
-      border: 1.5px solid var(--starch);
-      border-radius: 14px;
-      padding: 14px 18px;
-      margin: 14px 0;
-      text-align: left;
-      font-size: 0.85rem;
-      color: #7A5010;
-      line-height: 2;
-    }
-
+    .start-icon { width: 88px; height: 88px; margin: 0 auto 18px; background: linear-gradient(135deg,var(--starch),#E8D4A0); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; border: 3px solid var(--starch-dark); box-shadow: 0 6px 20px var(--shadow-lg),inset 0 2px 6px rgba(255,255,255,0.5); }
+    .start-card h2 { font-size: 1.3rem; color: var(--starch-dark); margin-bottom: 10px; font-weight: 700; }
+    .start-card > p { font-size: 0.88rem; color: #9A7840; line-height: 1.8; margin-bottom: 6px; }
+    .starch-facts { background: linear-gradient(135deg,#FFF8EE,#FFF3DC); border: 1.5px solid var(--starch); border-radius: 14px; padding: 14px 18px; margin: 14px 0; text-align: left; font-size: 0.85rem; color: #7A5010; line-height: 2; }
     .starch-facts li { margin-left: 14px; }
-
-    /* ===== BUTTONS ===== */
-    .btn {
-      background: linear-gradient(135deg, var(--starch-dark), #5A3D08);
-      color: #FFF;
-      border: none;
-      border-radius: 14px;
-      padding: 13px 36px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      font-family: inherit;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 14px var(--shadow-lg);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 22px var(--shadow-lg);
-      background: linear-gradient(135deg, #7A5A10, #3D2900);
-    }
-
+    .btn { background: linear-gradient(135deg,var(--starch-dark),#5A3D08); color: #FFF; border: none; border-radius: 14px; padding: 13px 36px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.25s ease; font-family: inherit; letter-spacing: 0.5px; box-shadow: 0 4px 14px var(--shadow-lg); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px var(--shadow-lg); background: linear-gradient(135deg,#7A5A10,#3D2900); }
     .btn:active { transform: translateY(0); }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--starch-dark);
-      border: 2px solid var(--starch-dark);
-      box-shadow: none;
-      padding: 11px 28px;
-      font-size: 0.9rem;
-    }
-
-    .btn-outline:hover {
-      background: var(--starch);
-      box-shadow: 0 4px 12px var(--shadow);
-    }
-
-    .btn-sm {
-      padding: 8px 20px;
-      font-size: 0.85rem;
-      border-radius: 10px;
-    }
-
-    .mode-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    /* ===== QUIZ ===== */
-    .quiz-header {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-
-    .quiz-progress {
-      display: flex;
-      gap: 7px;
-      justify-content: center;
-      margin-top: 10px;
-    }
-
-    .prog-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--starch);
-      border: 2px solid var(--starch-dark);
-      transition: all 0.3s ease;
-    }
-
+    .btn-outline { background: transparent; color: var(--starch-dark); border: 2px solid var(--starch-dark); box-shadow: none; padding: 11px 28px; font-size: 0.9rem; }
+    .btn-outline:hover { background: var(--starch); box-shadow: 0 4px 12px var(--shadow); }
+    .btn-sm { padding: 8px 20px; font-size: 0.85rem; border-radius: 10px; }
+    .mode-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+    .quiz-header { text-align: center; margin-bottom: 16px; }
+    .quiz-progress { display: flex; gap: 7px; justify-content: center; margin-top: 10px; }
+    .prog-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--starch); border: 2px solid var(--starch-dark); transition: all 0.3s ease; }
     .prog-dot.done { background: var(--starch-dark); }
     .prog-dot.cur { background: var(--starch-dark); transform: scale(1.4); box-shadow: 0 0 6px rgba(139,105,20,0.4); }
-
-    .q-tag {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--starch-dark), #5A3D08);
-      color: #FFF;
-      font-size: 0.72rem;
-      padding: 3px 14px;
-      border-radius: 20px;
-      margin-bottom: 12px;
-      font-weight: 600;
-    }
-
-    .question-text {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    /* ===== OPTIONS - FIXED: larger gap, no accidental clicks ===== */
-    .options {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;       /* Large gap to prevent accidental clicks */
-    }
-
+    .q-tag { display: inline-block; background: linear-gradient(135deg,var(--starch-dark),#5A3D08); color: #FFF; font-size: 0.72rem; padding: 3px 14px; border-radius: 20px; margin-bottom: 12px; font-weight: 600; }
+    .question-text { font-size: 1.05rem; font-weight: 600; color: var(--text); line-height: 1.75; }
+    .options { display: flex; flex-direction: column; gap: 14px; }
     .option {
-      background: linear-gradient(135deg, #FFFFFF, #FDFAF2);
-      border: 2px solid var(--starch);
-      border-radius: 14px;
-      padding: 15px 20px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      font-family: inherit;
-      color: var(--text);
-      text-align: left;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      box-shadow: 0 2px 8px var(--shadow);
-      user-select: none;
-      position: relative;
-      overflow: hidden;
+      background: linear-gradient(135deg,#FFFFFF,#FDFAF2);
+      border: 2px solid var(--starch); border-radius: 14px;
+      padding: 15px 20px; cursor: pointer; font-size: 0.95rem;
+      font-family: inherit; color: var(--text); text-align: left;
+      transition: all 0.2s ease; display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 2px 8px var(--shadow); user-select: none; position: relative; overflow: hidden;
     }
-
-    .option::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, var(--starch), #E8D4A0);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
+    .option::before { content:''; position:absolute; top:0;left:0;right:0;bottom:0; background: linear-gradient(135deg,var(--starch),#E8D4A0); opacity: 0; transition: opacity 0.2s; }
     .option:hover:not(:disabled)::before { opacity: 0.15; }
-
-    .option:hover:not(:disabled) {
-      border-color: var(--starch-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px var(--shadow-lg);
-    }
-
+    .option:hover:not(:disabled) { border-color: var(--starch-dark); transform: translateY(-1px); box-shadow: 0 4px 14px var(--shadow-lg); }
     .option:disabled { cursor: default; }
-
-    .option .letter {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--starch), #E8D4A0);
-      border: 2px solid var(--starch-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.82rem;
-      color: var(--starch-dark);
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-    }
-
+    .option .letter { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,var(--starch),#E8D4A0); border: 2px solid var(--starch-dark); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.82rem; color: var(--starch-dark); flex-shrink: 0; position: relative; z-index: 1; }
     .option span:not(.letter) { position: relative; z-index: 1; }
-
-    .option.correct {
-      border-color: var(--correct);
-      background: linear-gradient(135deg, #F1F8F1, #E8F5E9);
-      animation: popIn 0.35s ease;
-    }
-
-    .option.correct .letter {
-      background: var(--correct);
-      border-color: var(--correct);
-      color: #FFF;
-    }
-
-    .option.wrong {
-      border-color: var(--wrong);
-      background: linear-gradient(135deg, #FFF5F5, #FFEBEE);
-      animation: shake 0.4s ease;
-    }
-
-    .option.wrong .letter {
-      background: var(--wrong);
-      border-color: var(--wrong);
-      color: #FFF;
-    }
-
-    @keyframes popIn {
-      0% { transform: scale(0.97); }
-      50% { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-6px); }
-      40% { transform: translateX(6px); }
-      60% { transform: translateX(-4px); }
-      80% { transform: translateX(4px); }
-    }
-
-    .explanation {
-      margin-top: 14px;
-      background: linear-gradient(135deg, var(--starch), #FFF3DC);
-      border-radius: 12px;
-      padding: 14px 18px;
-      font-size: 0.86rem;
-      color: #5A3A00;
-      line-height: 1.8;
-      border-left: 4px solid var(--starch-dark);
-      animation: fadeIn 0.3s ease;
-    }
-
+    .option.correct { border-color: var(--correct); background: linear-gradient(135deg,#F1F8F1,#E8F5E9); animation: popIn 0.35s ease; }
+    .option.correct .letter { background: var(--correct); border-color: var(--correct); color: #FFF; }
+    .option.wrong { border-color: var(--wrong); background: linear-gradient(135deg,#FFF5F5,#FFEBEE); animation: shake 0.4s ease; }
+    .option.wrong .letter { background: var(--wrong); border-color: var(--wrong); color: #FFF; }
+    @keyframes popIn { 0%{transform:scale(0.97)} 50%{transform:scale(1.02)} 100%{transform:scale(1)} }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .explanation { margin-top: 14px; background: linear-gradient(135deg,var(--starch),#FFF3DC); border-radius: 12px; padding: 14px 18px; font-size: 0.86rem; color: #5A3A00; line-height: 1.8; border-left: 4px solid var(--starch-dark); animation: fadeIn 0.3s ease; }
     .explanation strong { color: var(--starch-dark); }
-
-    .quiz-nav {
-      display: flex;
-      justify-content: center;
-      margin-top: 16px;
-      gap: 10px;
-    }
-
-    /* ===== CLASSIFY ===== */
-    .classify-info {
-      text-align: center;
-      font-size: 0.85rem;
-      color: #8B6914;
-      margin-bottom: 14px;
-      padding: 10px 16px;
-      background: linear-gradient(135deg, var(--starch), #FFF3DC);
-      border-radius: 12px;
-      border: 1.5px solid var(--starch);
-    }
-
-    .drag-source {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      background: linear-gradient(135deg, #FFFFFF, #FDFAF2);
-      border: 2px dashed var(--starch-dark);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 14px;
-      min-height: 76px;
-    }
-
-    .food-card {
-      background: linear-gradient(135deg, var(--card-bg), #FFF8EE);
-      border: 2px solid var(--starch);
-      border-radius: 12px;
-      padding: 9px 16px;
-      font-size: 0.88rem;
-      font-family: inherit;
-      color: var(--text);
-      cursor: grab;
-      user-select: none;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 6px var(--shadow);
-    }
-
-    .food-card:active { cursor: grabbing; }
-
-    .food-card:hover {
-      border-color: var(--starch-dark);
-      transform: scale(1.06);
-      box-shadow: 0 4px 14px var(--shadow-lg);
-    }
-
+    .quiz-nav { display: flex; justify-content: center; margin-top: 16px; gap: 10px; }
+    .classify-info { text-align: center; font-size: 0.85rem; color: #8B6914; margin-bottom: 14px; padding: 10px 16px; background: linear-gradient(135deg,var(--starch),#FFF3DC); border-radius: 12px; border: 1.5px solid var(--starch); }
+    .drag-source { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: linear-gradient(135deg,#FFFFFF,#FDFAF2); border: 2px dashed var(--starch-dark); border-radius: 16px; padding: 16px; margin-bottom: 14px; min-height: 76px; }
+    .food-card { background: linear-gradient(135deg,var(--card-bg),#FFF8EE); border: 2px solid var(--starch); border-radius: 12px; padding: 9px 16px; font-size: 0.88rem; font-family: inherit; color: var(--text); cursor: grab; user-select: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px var(--shadow); }
+    .food-card:hover { border-color: var(--starch-dark); transform: scale(1.06); box-shadow: 0 4px 14px var(--shadow-lg); }
     .food-card.dragging { opacity: 0.4; transform: scale(0.96); }
-
     .food-card.placed { opacity: 0.35; pointer-events: none; border-style: dashed; }
-
     .zones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-
-    .zone {
-      background: linear-gradient(135deg, #FFFFFF, #FDFAF2);
-      border: 2px solid var(--starch);
-      border-radius: 16px;
-      padding: 14px 12px;
-      min-height: 130px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .zone.drag-over {
-      border-color: var(--starch-dark);
-      background: linear-gradient(135deg, var(--starch), #FFF3DC);
-      box-shadow: 0 0 0 3px rgba(139,105,20,0.15), 0 4px 16px var(--shadow-lg);
-    }
-
-    .zone-title {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--starch-dark);
-      text-align: center;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--starch);
-    }
-
-    .zone-dropped {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      min-height: 30px;
-    }
-
-    .dropped-food {
-      background: linear-gradient(135deg, var(--starch), #FFF3DC);
-      border: 1px solid var(--starch-dark);
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: 0.82rem;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      animation: popIn 0.3s ease;
-    }
-
+    .zone { background: linear-gradient(135deg,#FFFFFF,#FDFAF2); border: 2px solid var(--starch); border-radius: 16px; padding: 14px 12px; min-height: 130px; display: flex; flex-direction: column; gap: 8px; transition: all 0.2s ease; }
+    .zone.drag-over { border-color: var(--starch-dark); background: linear-gradient(135deg,var(--starch),#FFF3DC); box-shadow: 0 0 0 3px rgba(139,105,20,0.15),0 4px 16px var(--shadow-lg); }
+    .zone-title { font-size: 0.82rem; font-weight: 700; color: var(--starch-dark); text-align: center; padding-bottom: 8px; border-bottom: 1px solid var(--starch); }
+    .zone-dropped { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
+    .dropped-food { background: linear-gradient(135deg,var(--starch),#FFF3DC); border: 1px solid var(--starch-dark); border-radius: 8px; padding: 4px 10px; font-size: 0.82rem; display: flex; align-items: center; gap: 4px; animation: popIn 0.3s ease; }
     .dropped-food.correct { background: #C8E6C9; border-color: var(--correct); }
     .dropped-food.wrong { background: #FFCDD2; border-color: var(--wrong); }
-
-    .zone-score {
-      font-size: 0.72rem;
-      text-align: center;
-      color: #8B6914;
-      margin-top: auto;
-      padding-top: 5px;
-    }
-
-    .classify-nav {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    /* ===== RUNNER GAME ===== */
+    .zone-score { font-size: 0.72rem; text-align: center; color: #8B6914; margin-top: auto; padding-top: 5px; }
+    .classify-nav { display: flex; justify-content: center; gap: 10px; }
     .runner-card { padding: 0; overflow: hidden; }
-
-    .runner-instructions {
-      padding: 14px 20px 0;
-      text-align: center;
-      font-size: 0.82rem;
-      color: #9A7840;
-    }
-
-    #runnerCanvas {
-      display: block;
-      border-radius: 0 0 18px 18px;
-      border-top: none;
-    }
-
-    /* ===== RESULT ===== */
+    .runner-instructions { padding: 14px 20px 0; text-align: center; font-size: 0.82rem; color: #9A7840; }
+    #runnerCanvas { display: block; border-radius: 0 0 18px 18px; border-top: none; cursor: pointer; }
     .result-emoji { font-size: 4rem; margin-bottom: 10px; }
-
-    .result-title {
-      font-size: 1.4rem;
-      color: var(--starch-dark);
-      margin-bottom: 6px;
-      font-weight: 700;
-    }
-
-    .result-score {
-      font-size: 2.8rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--starch-dark), #C8A020);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin: 10px 0;
-    }
-
-    .result-detail {
-      font-size: 0.88rem;
-      color: #9A7840;
-      margin-bottom: 16px;
-      line-height: 1.8;
-    }
-
-    .result-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--starch), #FFF3DC);
-      border: 2px solid var(--starch-dark);
-      border-radius: 20px;
-      padding: 6px 22px;
-      font-size: 0.88rem;
-      color: var(--starch-dark);
-      margin-bottom: 18px;
-      font-weight: 700;
-    }
-
-    .starch-tip {
-      background: linear-gradient(135deg, var(--starch), #FFF3DC);
-      border-radius: 14px;
-      padding: 14px 18px;
-      text-align: left;
-      font-size: 0.85rem;
-      color: #5A3A00;
-      line-height: 2;
-      margin-bottom: 20px;
-    }
-
+    .result-title { font-size: 1.4rem; color: var(--starch-dark); margin-bottom: 6px; font-weight: 700; }
+    .result-score { font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg,var(--starch-dark),#C8A020); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 10px 0; }
+    .result-detail { font-size: 0.88rem; color: #9A7840; margin-bottom: 16px; line-height: 1.8; }
+    .result-badge { display: inline-block; background: linear-gradient(135deg,var(--starch),#FFF3DC); border: 2px solid var(--starch-dark); border-radius: 20px; padding: 6px 22px; font-size: 0.88rem; color: var(--starch-dark); margin-bottom: 18px; font-weight: 700; }
+    .starch-tip { background: linear-gradient(135deg,var(--starch),#FFF3DC); border-radius: 14px; padding: 14px 18px; text-align: left; font-size: 0.85rem; color: #5A3A00; line-height: 2; margin-bottom: 20px; }
     .starch-tip li { margin-left: 14px; }
-
-    .result-buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    /* ===== ANIMATIONS ===== */
+    .result-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .score-bump { animation: bump 0.4s ease; }
-
-    @keyframes bump {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.3); }
-      100% { transform: scale(1); }
-    }
-
+    @keyframes bump { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
     .streak-bump { animation: bump 0.4s ease; }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 480px) {
-      h1 { font-size: 1.5rem; }
-      .zones { grid-template-columns: 1fr; }
-      .mode-tabs { gap: 6px; }
-      .tab-btn { padding: 7px 14px; font-size: 0.8rem; }
-      .option { padding: 12px 16px; font-size: 0.9rem; }
-    }
+    @media (max-width: 480px) { h1{font-size:1.5rem} .zones{grid-template-columns:1fr} .mode-tabs{gap:6px} .tab-btn{padding:7px 14px;font-size:0.8rem} .option{padding:12px 16px;font-size:0.9rem} }
   </style>
 </head>
 <body>
   <div class="grain-bg"></div>
-
   <div class="site-header">
     <div class="logo">STARCH LEARNING</div>
     <h1>淀粉知识大闯关</h1>
     <div class="subtitle">边玩边学，认识淀粉的奥秘</div>
   </div>
-
   <div class="score-bar">
     <div class="score-item">📊 得分 <span class="val" id="total-score">0</span></div>
     <div class="score-item">🔥 连胜 <span class="val" id="streak">0</span></div>
   </div>
-
   <div class="mode-tabs">
     <button class="tab-btn active" onclick="switchMode('start')">🏠 主页</button>
     <button class="tab-btn" onclick="switchMode('quiz')">🧠 知识问答</button>
     <button class="tab-btn" onclick="switchMode('classify')">🍽️ 食物分类</button>
     <button class="tab-btn" onclick="switchMode('runner')">🏃 跑酷收集</button>
   </div>
-
   <div id="app">
-
     <!-- 开始页 -->
     <div class="screen active" id="screen-start">
       <div class="card start-card">
@@ -705,7 +183,6 @@
         </div>
       </div>
     </div>
-
     <!-- 问答页 -->
     <div class="screen" id="screen-quiz">
       <div class="card">
@@ -720,7 +197,6 @@
         <div class="quiz-nav" id="quiz-nav"></div>
       </div>
     </div>
-
     <!-- 分类页 -->
     <div class="screen" id="screen-classify">
       <div class="card">
@@ -744,15 +220,13 @@
         </div>
       </div>
     </div>
-
     <!-- 跑酷游戏页 -->
     <div class="screen" id="screen-runner">
       <div class="card runner-card">
-        <div class="runner-instructions">🎮 用方向键移动，碰到正确答案 +10分！按空格键开始</div>
+        <div class="runner-instructions">🎮 点击正确答案，角色会自动移动过去！按空格键或点击画布开始</div>
         <canvas id="runnerCanvas" width="680" height="420"></canvas>
       </div>
     </div>
-
     <!-- 结果页 -->
     <div class="screen" id="screen-result">
       <div class="card">
@@ -771,33 +245,22 @@
         </div>
       </div>
     </div>
-
   </div>
 
 <script>
 // ===== 全局状态 =====
 let totalScore = 0;
 let streak = 0;
-let quizIdx = 0;
-let quizCorrectCount = 0;
 let currentMode = 'start';
 
-const CORRECT_PTS = 20;
-const CORRECT_BONUS = 5;
-
-// ===== 模式切换 =====
-function switchMode(mode) {
-  currentMode = mode;
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    const names = ['start', 'quiz', 'classify', 'runner'];
-    b.classList.toggle('active', names[i] === mode);
-  });
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + mode).classList.add('active');
-
-  if (mode === 'quiz') startQuiz();
-  else if (mode === 'classify') startClassify();
-  else if (mode === 'runner') startRunner();
+// ===== 工具函数 =====
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 // ===== 分数 =====
@@ -821,115 +284,106 @@ function updateStreak(correct) {
   }
 }
 
-// ===== 问答数据 =====
-const quizData = [
-  { q: "以下哪种食物淀粉含量最高？", opts: ["A. 菠菜", "B. 土豆 🥔", "C. 西红柿", "D. 黄瓜"], ans: 1, exp: "正确答案是 <strong>B. 土豆</strong>。土豆的淀粉含量约为 15-20%，是常见食物中淀粉含量最高的之一。菠菜、西红柿、黄瓜主要是水分和膳食纤维。" },
-  { q: "淀粉属于哪类营养素？", opts: ["A. 蛋白质", "B. 脂肪", "C. 碳水化合物 🍬", "D. 维生素"], ans: 2, exp: "正确答案是 <strong>C. 碳水化合物</strong>。淀粉是多糖，由葡萄糖分子连接而成，是人体最重要的能量来源之一。" },
-  { q: "淀粉在烹饪中常用于做什么？", opts: ["A. 染色", "B. 增稠", "C. 调味", "D. 防腐"], ans: 1, exp: "正确答案是 <strong>B. 增稠</strong>。淀粉加热糊化后常用于勾芡、做汤羹、制作酱汁，使其变得浓稠。" },
-  { q: "以下哪种不是淀粉的主要来源？", opts: ["A. 玉米", "B. 小麦", "C. 大豆 🫘", "D. 木薯"], ans: 2, exp: "正确答案是 <strong>C. 大豆</strong>。大豆主要含蛋白质（36-40%）和脂肪，淀粉来源主要是谷物和根茎类。" },
-  { q: "淀粉在小肠中被消化成什么？", opts: ["A. 葡萄糖 🍬", "B. 氨基酸", "C. 脂肪酸", "D. 维生素"], ans: 0, exp: "正确答案是 <strong>A. 葡萄糖</strong>。淀粉被淀粉酶分解成葡萄糖，被小肠吸收后进入血液，为身体提供能量。" },
-  { q: "米饭放凉后为什么会变硬？", opts: ["A. 水分蒸发了", "B. 淀粉发生了老化回生", "C. 细菌繁殖了", "D. 淀粉发酵了"], ans: 1, exp: "正确答案是 <strong>B. 淀粉发生了老化回生</strong>。米饭冷却后淀粉分子重新排列结晶，这就是「淀粉老化」现象。" },
-  { q: "下列哪种食物吃起来甜，但淀粉含量并不高？", opts: ["A. 红薯", "B. 南瓜", "C. 苹果 🍎", "D. 燕麦"], ans: 2, exp: "正确答案是 <strong>C. 苹果</strong>。苹果的甜味来自果糖和葡萄糖，淀粉含量极低。红薯和燕麦的淀粉含量都很高。" },
-  { q: "关于淀粉的说法，正确的是？", opts: ["A. 所有淀粉都一样", "B. 直链淀粉比支链淀粉更难消化", "C. 淀粉只存在于植物中 🌱", "D. 加热对淀粉没有影响"], ans: 2, exp: "正确答案是 <strong>C. 淀粉只存在于植物中</strong>。淀粉是植物通过光合作用合成的储能物质，动物储存糖原而非淀粉。" }
-];
-
-// 洗牌
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+// ===== 模式切换 =====
+function switchMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    const names = ['start','quiz','classify','runner'];
+    b.classList.toggle('active', names[i] === mode);
+  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + mode).classList.add('active');
+  if (mode === 'quiz') startQuiz();
+  else if (mode === 'classify') startClassify();
+  else if (mode === 'runner') startRunner();
 }
 
-// ===== 知识问答 =====
+// ===== 问答数据 =====
+const quizData = [
+  { q:"以下哪种食物淀粉含量最高？", opts:["A. 菠菜","B. 土豆 🥔","C. 西红柿","D. 黄瓜"], ans:1, exp:"正确答案是 <strong>B. 土豆</strong>。土豆的淀粉含量约为 15-20%，是常见食物中淀粉含量最高的之一。" },
+  { q:"淀粉属于哪类营养素？", opts:["A. 蛋白质","B. 脂肪","C. 碳水化合物 🍬","D. 维生素"], ans:2, exp:"正确答案是 <strong>C. 碳水化合物</strong>。淀粉是多糖，由葡萄糖分子连接而成，是人体最重要的能量来源之一。" },
+  { q:"淀粉在烹饪中常用于做什么？", opts:["A. 染色","B. 增稠","C. 调味","D. 防腐"], ans:1, exp:"正确答案是 <strong>B. 增稠</strong>。淀粉加热糊化后常用于勾芡、做汤羹、制作酱汁。" },
+  { q:"以下哪种不是淀粉的主要来源？", opts:["A. 玉米","B. 小麦","C. 大豆 🫘","D. 木薯"], ans:2, exp:"正确答案是 <strong>C. 大豆</strong>。大豆主要含蛋白质（36-40%）和脂肪，淀粉来源主要是谷物和根茎类。" },
+  { q:"淀粉在小肠中被消化成什么？", opts:["A. 葡萄糖 🍬","B. 氨基酸","C. 脂肪酸","D. 维生素"], ans:0, exp:"正确答案是 <strong>A. 葡萄糖</strong>。淀粉被淀粉酶分解成葡萄糖，被小肠吸收后为身体提供能量。" },
+  { q:"米饭放凉后为什么会变硬？", opts:["A. 水分蒸发了","B. 淀粉发生了老化回生","C. 细菌繁殖了","D. 淀粉发酵了"], ans:1, exp:"正确答案是 <strong>B. 淀粉发生了老化回生</strong>。米饭冷却后淀粉分子重新排列结晶，这就是「淀粉老化」现象。" },
+  { q:"下列哪种食物吃起来甜，但淀粉含量并不高？", opts:["A. 红薯","B. 南瓜","C. 苹果 🍎","D. 燕麦"], ans:2, exp:"正确答案是 <strong>C. 苹果</strong>。苹果的甜味来自果糖和葡萄糖，淀粉含量极低。红薯和燕麦的淀粉含量都很高。" },
+  { q:"关于淀粉的说法，正确的是？", opts:["A. 所有淀粉都一样","B. 直链淀粉比支链淀粉更难消化","C. 淀粉只存在于植物中 🌱","D. 加热对淀粉没有影响"], ans:2, exp:"正确答案是 <strong>C. 淀粉只存在于植物中</strong>。淀粉是植物通过光合作用合成的储能物质，动物储存糖原而非淀粉。" },
+];
+
+let quizIdx = 0;
+let quizCorrectCount = 0;
 let quizShuffled = [];
 
 function startQuiz() {
   quizIdx = 0;
   quizCorrectCount = 0;
-  quizShuffled = shuffle([...quizData]);
+  quizShuffled = shuffle(quizData);
   renderQuiz();
 }
 
 function renderQuiz() {
-  const total = quizShuffled.length;
+  if (!quizShuffled || quizShuffled.length === 0) return;
   const q = quizShuffled[quizIdx];
+  if (!q) return;
 
   let dots = '';
-  for (let i = 0; i < total; i++) {
+  for (let i = 0; i < quizShuffled.length; i++) {
     dots += `<div class="prog-dot ${i < quizIdx ? 'done' : i === quizIdx ? 'cur' : ''}"></div>`;
   }
   document.getElementById('quiz-progress').innerHTML = dots;
-  document.getElementById('q-tag').textContent = `第 ${quizIdx + 1} / ${total} 题`;
+  document.getElementById('q-tag').textContent = `第 ${quizIdx + 1} / ${quizShuffled.length} 题`;
   document.getElementById('question-text').textContent = q.q;
-
-  let optsHtml = '';
-  q.opts.forEach((opt, i) => {
-    optsHtml += `<button class="option" onclick="selectAnswer(${i})" id="opt-${i}"><span class="letter">${'ABCD'[i]}</span><span>${opt}</span></button>`;
-  });
-  document.getElementById('options').innerHTML = optsHtml;
+  document.getElementById('options').innerHTML = q.opts.map((opt, i) =>
+    `<button class="option" onclick="quizSelect(${i})" id="opt-${i}"><span class="letter">${'ABCD'[i]}</span><span>${opt}</span></button>`
+  ).join('');
   document.getElementById('explanation-box').innerHTML = '';
   document.getElementById('quiz-nav').innerHTML = '';
 }
 
-function selectAnswer(idx) {
+function quizSelect(idx) {
+  if (!quizShuffled || !quizShuffled[quizIdx]) return;
   const q = quizShuffled[quizIdx];
   const correct = idx === q.ans;
-
-  document.querySelectorAll('.option').forEach(btn => btn.disabled = true);
+  document.querySelectorAll('.option').forEach(b => b.disabled = true);
   document.getElementById(`opt-${idx}`).classList.add(correct ? 'correct' : 'wrong');
   if (!correct) document.getElementById(`opt-${q.ans}`).classList.add('correct');
-
-  if (correct) {
-    quizCorrectCount++;
-    updateStreak(true);
-    updateScore(CORRECT_PTS + (streak > 1 ? CORRECT_BONUS : 0));
-  } else {
-    updateStreak(false);
-  }
-
-  document.getElementById('explanation-box').innerHTML =
-    `<div class="explanation">${correct ? '✅ ' : '❌ '}${q.exp}</div>`;
-
+  if (correct) { quizCorrectCount++; updateStreak(true); updateScore(20 + (streak > 0 ? 5 : 0)); }
+  else { updateStreak(false); }
+  document.getElementById('explanation-box').innerHTML = `<div class="explanation">${correct ? '✅ ' : '❌ '}${q.exp}</div>`;
   const isLast = quizIdx >= quizShuffled.length - 1;
   document.getElementById('quiz-nav').innerHTML = isLast
     ? `<button class="btn" onclick="showResult('quiz')">查看成绩 🏆</button>`
-    : `<button class="btn" onclick="nextQuestion()">下一题 →</button>`;
+    : `<button class="btn" onclick="quizNext()">下一题 →</button>`;
 }
 
-function nextQuestion() { quizIdx++; renderQuiz(); }
+function quizNext() { quizIdx++; renderQuiz(); }
 
 // ===== 分类游戏 =====
 const classifyItems = [
-  { name: "🍚 米饭", correct: "high" }, { name: "🍜 面条", correct: "high" },
-  { name: "🥔 土豆", correct: "high" }, { name: "🍠 红薯", correct: "high" },
-  { name: "🌽 玉米", correct: "high" }, { name: "🍞 面包", correct: "high" },
-  { name: "🥬 菠菜", correct: "low" },  { name: "🍅 西红柿", correct: "low" },
-  { name: "🥚 鸡蛋", correct: "low" },  { name: "🍓 草莓", correct: "low" },
-  { name: "🥛 牛奶", correct: "low" },  { name: "🥒 黄瓜", correct: "low" },
+  {name:"🍚 米饭",correct:"high"},{name:"🍜 面条",correct:"high"},
+  {name:"🥔 土豆",correct:"high"},{name:"🍠 红薯",correct:"high"},
+  {name:"🌽 玉米",correct:"high"},{name:"🍞 面包",correct:"high"},
+  {name:"🥬 菠菜",correct:"low"},{name:"🍅 西红柿",correct:"low"},
+  {name:"🥚 鸡蛋",correct:"low"},{name:"🍓 草莓",correct:"low"},
+  {name:"🥛 牛奶",correct:"low"},{name:"🥒 黄瓜",correct:"low"},
 ];
-
 let classifyData = [];
-let classifyResults = { high: [], low: [] };
+let classifyResults = {high:[],low:[]};
 let draggingName = null;
 
 function startClassify() {
-  classifyResults = { high: [], low: [] };
-  classifyData = shuffle(classifyItems.map(item => ({ ...item, placed: false })));
+  classifyResults = {high:[],low:[]};
+  classifyData = shuffle(classifyItems).map(item => ({...item, placed:false}));
   renderClassify();
 }
 
 function renderClassify() {
   const source = document.getElementById('drag-source');
-  source.innerHTML = classifyData
-    .filter(item => !item.placed)
-    .map(item => `<div class="food-card" draggable="true" id="food-${item.name}" ondragstart="onDragStart(event,'${item.name}')" ondragend="onDragEnd(event)">${item.name}</div>`)
-    .join('');
-
-  ['high', 'low'].forEach(zone => {
-    const el = document.getElementById(`dropped-${zone}`);
-    el.innerHTML = classifyResults[zone].map(r =>
+  source.innerHTML = classifyData.filter(i => !i.placed).map(item =>
+    `<div class="food-card" draggable="true" id="food-${item.name}" ondragstart="onDragStart(event,'${item.name}')" ondragend="onDragEnd(event)">${item.name}</div>`
+  ).join('');
+  ['high','low'].forEach(zone => {
+    document.getElementById(`dropped-${zone}`).innerHTML = classifyResults[zone].map(r =>
       `<div class="dropped-food ${r.correct ? 'correct' : 'wrong'}">${r.name}</div>`
     ).join('');
     document.getElementById(`score-${zone}`).textContent =
@@ -937,79 +391,55 @@ function renderClassify() {
         ? `${classifyResults[zone].filter(r=>r.correct).length} / ${classifyResults[zone].length} 正确`
         : '';
   });
-
-  const placedCount = classifyResults.high.length + classifyResults.low.length;
+  const placed = classifyResults.high.length + classifyResults.low.length;
   const btn = document.getElementById('classify-finish-btn');
-  btn.disabled = placedCount < classifyData.length;
-  btn.textContent = placedCount < classifyData.length
-    ? `还需放置 ${classifyData.length - placedCount} 个`
-    : '完成分类 ✅';
+  btn.disabled = placed < classifyData.length;
+  btn.textContent = placed < classifyData.length ? `还需放置 ${classifyData.length - placed} 个` : '完成分类 ✅';
 }
 
-function onDragStart(e, name) {
-  draggingName = name;
-  e.dataTransfer.effectAllowed = 'move';
-  document.getElementById(`food-${name}`).classList.add('dragging');
-}
-
-function onDragEnd() {
-  document.querySelectorAll('.food-card').forEach(c => c.classList.remove('dragging'));
-  document.querySelectorAll('.zone').forEach(z => z.classList.remove('drag-over'));
-}
-
+function onDragStart(e, name) { draggingName = name; e.dataTransfer.effectAllowed = 'move'; document.getElementById(`food-${name}`).classList.add('dragging'); }
+function onDragEnd() { document.querySelectorAll('.food-card').forEach(c => c.classList.remove('dragging')); document.querySelectorAll('.zone').forEach(z => z.classList.remove('drag-over')); }
 function onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
 function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
-
 function onDrop(e, zone) {
   e.preventDefault();
   document.querySelectorAll('.zone').forEach(z => z.classList.remove('drag-over'));
   if (!draggingName) return;
   const item = classifyData.find(i => i.name === draggingName);
   if (!item || item.placed) return;
-
   item.placed = true;
   const correct = item.correct === zone;
-  classifyResults[zone].push({ name: item.name, correct });
-
-  if (correct) {
-    updateStreak(true);
-    updateScore(15 + (streak > 1 ? 5 : 0));
-  } else {
-    updateStreak(false);
-  }
-
+  classifyResults[zone].push({name:item.name, correct});
+  if (correct) { updateStreak(true); updateScore(15 + (streak > 0 ? 5 : 0)); }
+  else { updateStreak(false); }
   draggingName = null;
   renderClassify();
 }
-
 function finishClassify() { showResult('classify'); }
 
-// ===== 跑酷游戏（点击选择 + 角色视觉反馈）=====
+// ===== 跑酷游戏 =====
 const runnerCanvas = document.getElementById('runnerCanvas');
 const rCtx = runnerCanvas.getContext('2d');
 
-const runnerQuestions = [
-  { q: "淀粉主要存在于哪种食物？", opts: ["苹果", "米饭", "牛肉", "牛奶"], correct: 1 },
-  { q: "淀粉属于哪类营养素？", opts: ["蛋白质", "脂肪", "碳水化合物", "维生素"], correct: 2 },
-  { q: "淀粉遇碘酒变成什么颜色？", opts: ["红色", "绿色", "蓝色", "黄色"], correct: 2 },
-  { q: "以下哪个不是淀粉制品？", opts: ["粉丝", "面包", "奶酪", "粉条"], correct: 2 },
-  { q: "淀粉在人体内被消化成？", opts: ["直接吸收", "氧气", "葡萄糖", "水"], correct: 2 },
-  { q: "糯米比普通大米含有更多？", opts: ["蛋白质", "水分", "膳食纤维", "支链淀粉"], correct: 3 },
-  { q: "淀粉的主要功能是？", opts: ["构成身体", "提供能量", "抵御疾病", "调节体温"], correct: 1 },
-  { q: "下列哪种食物淀粉含量最高？", opts: ["青菜", "红薯", "香蕉", "鸡蛋"], correct: 1 },
-  { q: "生吃淀粉类食物好吗？", opts: ["好", "不推荐", "无所谓", "看情况"], correct: 1 },
-  { q: "淀粉老化后会怎样？", opts: ["更易消化", "变得更硬", "变成水", "燃烧"], correct: 1 },
-];
-
-// 4选项的位置（2x2网格，与玩家区域完全分离）
+// 必须在所有初始化之前
 const OPTION_POSITIONS = [
-  { x: 170, y: 105 },  // 左上
-  { x: 510, y: 105 },  // 右上
-  { x: 170, y: 200 },  // 左下
-  { x: 510, y: 200 },  // 右下
+  {x:170,y:105},{x:510,y:105},{x:170,y:200},{x:510,y:200}
 ];
 const OPTION_W = 230;
 const OPTION_H = 70;
+
+const runnerQuestions = [
+  {q:"淀粉主要存在于哪种食物？",opts:["苹果","米饭","牛肉","牛奶"],correct:1},
+  {q:"淀粉属于哪类营养素？",opts:["蛋白质","脂肪","碳水化合物","维生素"],correct:2},
+  {q:"淀粉遇碘酒变成什么颜色？",opts:["红色","绿色","蓝色","黄色"],correct:2},
+  {q:"以下哪个不是淀粉制品？",opts:["粉丝","面包","奶酪","粉条"],correct:2},
+  {q:"淀粉在人体内被消化成？",opts:["直接吸收","氧气","葡萄糖","水"],correct:2},
+  {q:"糯米比普通大米含有更多？",opts:["蛋白质","水分","膳食纤维","支链淀粉"],correct:3},
+  {q:"淀粉的主要功能是？",opts:["构成身体","提供能量","抵御疾病","调节体温"],correct:1},
+  {q:"下列哪种食物淀粉含量最高？",opts:["青菜","红薯","香蕉","鸡蛋"],correct:1},
+  {q:"生吃淀粉类食物好吗？",opts:["好","不推荐","无所谓","看情况"],correct:1},
+  {q:"淀粉老化后会怎样？",opts:["更易消化","变得更硬","变成水","燃烧"],correct:1},
+];
 
 let runnerItems = [];
 let runnerQuestion = null;
@@ -1022,31 +452,26 @@ let showRunnerKnowledge = false;
 let runnerKnowledgeTimer = 0;
 let runnerShuffled = [];
 let runnerStars = [];
-let player = { x: 340, y: 350, size: 24, speed: 4 };
-let playerTarget = { x: 340, y: 350 };
-let selectedOptIdx = -1; // 当前选中的选项（用于角色移动）
+let player = {x:340,y:350,size:24,speed:4};
+let selectedOptIdx = -1;
 let runnerAnswered = false;
 
+// 初始化星星
 for (let i = 0; i < 35; i++) {
-  runnerStars.push({
-    x: Math.random() * runnerCanvas.width,
-    y: Math.random() * runnerCanvas.height,
-    size: Math.random() * 1.5 + 0.5,
-    speed: Math.random() * 0.8 + 0.3
-  });
+  runnerStars.push({x:Math.random()*runnerCanvas.width,y:Math.random()*runnerCanvas.height,size:Math.random()*1.5+0.5,speed:Math.random()*0.8+0.3});
 }
 
+// 键盘控制
 let runnerKeys = {};
 document.addEventListener('keydown', e => {
   runnerKeys[e.key] = true;
-  if (e.key === ' ' && !runnerStarted && !runnerOver) startRunnerGame();
+  if (e.key === ' ' && !runnerStarted && !runnerOver && currentMode === 'runner') startRunnerGame();
   if (e.key === 'r' && runnerOver) resetRunner();
 });
 document.addEventListener('keyup', e => runnerKeys[e.key] = false);
 
 function startRunner() {
-  player = { x: 340, y: 350, size: 24, speed: 4 };
-  playerTarget = { x: 340, y: 350 };
+  player = {x:340,y:350,size:24,speed:4};
   runnerItems = [];
   runnerQuestion = null;
   runnerQIdx = 0;
@@ -1058,7 +483,7 @@ function startRunner() {
   runnerKnowledgeTimer = 0;
   runnerAnswered = false;
   selectedOptIdx = -1;
-  runnerShuffled = shuffle([...runnerQuestions]).slice(0, 5);
+  runnerShuffled = shuffle(runnerQuestions).slice(0,5);
 }
 
 function startRunnerGame() {
@@ -1069,9 +494,7 @@ function startRunnerGame() {
   nextRunnerQuestion();
 }
 
-function resetRunner() {
-  startRunner();
-}
+function resetRunner() { startRunner(); }
 
 function nextRunnerQuestion() {
   runnerAnswered = false;
@@ -1079,45 +502,29 @@ function nextRunnerQuestion() {
   if (runnerQIdx >= runnerShuffled.length) { winRunner(); return; }
   runnerQuestion = runnerShuffled[runnerQIdx];
   createRunnerItems();
-  // 重置玩家到中间
-  playerTarget = { x: 340, y: 350 };
 }
 
 function createRunnerItems() {
   runnerItems = [];
-  const shuffledPos = shuffle([...OPTION_POSITIONS]);
+  const shuffledPos = shuffle(OPTION_POSITIONS);
   runnerQuestion.options.forEach((opt, i) => {
-    runnerItems.push({
-      x: shuffledPos[i].x,
-      y: shuffledPos[i].y,
-      text: opt,
-      correct: i === runnerQuestion.correct,
-      collected: false,
-      w: OPTION_W,
-      h: OPTION_H
-    });
+    runnerItems.push({x:shuffledPos[i].x,y:shuffledPos[i].y,text:opt,correct:i===runnerQuestion.correct,w:OPTION_W,h:OPTION_H});
   });
 }
 
-function winRunner() {
-  runnerOver = true;
-  showResult('runner');
-}
+function winRunner() { runnerOver = true; showResult('runner'); }
 
-// 点击检测（精确，必须点在选项区域内）
+// 点击检测
 function runnerCanvasClick(e) {
-  if (!runnerStarted || runnerOver || runnerAnswered) return;
+  if (!runnerStarted || runnerOver || runnerAnswered || currentMode !== 'runner') return;
   const rect = runnerCanvas.getBoundingClientRect();
-  const scaleX = runnerCanvas.width / rect.width;
-  const scaleY = runnerCanvas.height / rect.height;
-  const clickX = (e.clientX - rect.left) * scaleX;
-  const clickY = (e.clientY - rect.top) * scaleY;
-
+  const sx = runnerCanvas.width / rect.width;
+  const sy = runnerCanvas.height / rect.height;
+  const cx = (e.clientX - rect.left) * sx;
+  const cy = (e.clientY - rect.top) * sy;
   for (let i = 0; i < runnerItems.length; i++) {
     const item = runnerItems[i];
-    const inX = clickX > item.x - item.w / 2 && clickX < item.x + item.w / 2;
-    const inY = clickY > item.y - item.h / 2 && clickY < item.y + item.h / 2;
-    if (inX && inY) {
+    if (cx > item.x - item.w/2 && cx < item.x + item.w/2 && cy > item.y - item.h/2 && cy < item.y + item.h/2) {
       runnerHandleSelect(i);
       break;
     }
@@ -1125,118 +532,94 @@ function runnerCanvasClick(e) {
 }
 
 runnerCanvas.addEventListener('click', runnerCanvasClick);
-
-// 点击画布开始游戏（当未开始时）
-runnerCanvas.addEventListener('click', function startOnClick(e) {
-  if (!runnerStarted && !runnerOver) {
-    startRunnerGame();
-  }
+// 点击画布开始游戏
+runnerCanvas.addEventListener('click', function startClick(e) {
+  if (!runnerStarted && !runnerOver && currentMode === 'runner') startRunnerGame();
 });
 
 function runnerHandleSelect(idx) {
   if (runnerAnswered) return;
   runnerAnswered = true;
   const item = runnerItems[idx];
-
+  selectedOptIdx = idx;
+  player.x += (item.x - player.x) * 0.3;
+  player.y += (item.y - player.y) * 0.3;
   if (item.correct) {
     runnerScore++;
     updateScore(10);
     updateStreak(true);
-    selectedOptIdx = idx;
-    // 玩家移到正确选项
-    playerTarget = { x: item.x, y: item.y };
     showRunnerKnowledge = true;
-    runnerKnowledgeTimer = 100;
+    runnerKnowledgeTimer = 80;
   } else {
     runnerLives--;
     updateStreak(false);
-    selectedOptIdx = idx;
-    // 玩家移到错误选项
-    playerTarget = { x: item.x, y: item.y };
     showRunnerKnowledge = true;
-    runnerKnowledgeTimer = 100;
+    runnerKnowledgeTimer = 80;
   }
 }
 
 function drawRunnerPlayer() {
-  // 光晕
-  const glow = rCtx.createRadialGradient(player.x, player.y, 0, player.x, player.y, player.size * 2);
-  glow.addColorStop(0, 'rgba(200,169,110,0.3)');
-  glow.addColorStop(1, 'rgba(200,169,110,0)');
+  const glow = rCtx.createRadialGradient(player.x,player.y,0,player.x,player.y,player.size*2);
+  glow.addColorStop(0,'rgba(200,169,110,0.35)');
+  glow.addColorStop(1,'rgba(200,169,110,0)');
   rCtx.fillStyle = glow;
   rCtx.beginPath();
-  rCtx.arc(player.x, player.y, player.size * 2, 0, Math.PI * 2);
+  rCtx.arc(player.x,player.y,player.size*2,0,Math.PI*2);
   rCtx.fill();
-  // 身体
   rCtx.fillStyle = '#C8963E';
   rCtx.beginPath();
-  rCtx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+  rCtx.arc(player.x,player.y,player.size,0,Math.PI*2);
   rCtx.fill();
-  // 眼睛
   rCtx.fillStyle = '#FFF';
   rCtx.beginPath();
-  rCtx.arc(player.x - 6, player.y - 5, 5, 0, Math.PI * 2);
-  rCtx.arc(player.x + 6, player.y - 5, 5, 0, Math.PI * 2);
+  rCtx.arc(player.x-6,player.y-5,5,0,Math.PI*2);
+  rCtx.arc(player.x+6,player.y-5,5,0,Math.PI*2);
   rCtx.fill();
   rCtx.fillStyle = '#333';
   rCtx.beginPath();
-  rCtx.arc(player.x - 6, player.y - 5, 2.5, 0, Math.PI * 2);
-  rCtx.arc(player.x + 6, player.y - 5, 2.5, 0, Math.PI * 2);
+  rCtx.arc(player.x-6,player.y-5,2.5,0,Math.PI*2);
+  rCtx.arc(player.x+6,player.y-5,2.5,0,Math.PI*2);
   rCtx.fill();
-  // 嘴
   rCtx.strokeStyle = '#333';
   rCtx.lineWidth = 1.8;
   rCtx.beginPath();
-  rCtx.arc(player.x, player.y + 3, 7, 0.2, Math.PI - 0.2);
+  rCtx.arc(player.x,player.y+3,7,0.2,Math.PI-0.2);
   rCtx.stroke();
 }
 
 function drawRunnerItems() {
   runnerItems.forEach((item, idx) => {
-    if (item.collected) return;
-    const isSelected = selectedOptIdx === idx;
+    const isSel = selectedOptIdx === idx;
     const isCorrectOpt = item.correct;
-
     let bgColor, strokeColor, textColor;
     if (runnerAnswered) {
-      if (isSelected) {
+      if (isSel) {
         bgColor = isCorrectOpt ? '#C8E6C9' : '#FFCDD2';
         strokeColor = isCorrectOpt ? '#4CAF50' : '#F44336';
         textColor = isCorrectOpt ? '#2E7D32' : '#C62828';
       } else if (isCorrectOpt) {
-        bgColor = '#C8E6C9';
-        strokeColor = '#4CAF50';
-        textColor = '#2E7D32';
+        bgColor = '#C8E6C9'; strokeColor = '#4CAF50'; textColor = '#2E7D32';
       } else {
-        bgColor = '#FFF8EE';
-        strokeColor = '#E0D0B0';
-        textColor = '#999';
+        bgColor = '#FFF8EE'; strokeColor = '#E0D0B0'; textColor = '#999';
       }
     } else {
-      bgColor = '#FFF8EE';
-      strokeColor = '#C8963E';
-      textColor = '#3D2914';
+      bgColor = '#FFF8EE'; strokeColor = '#C8963E'; textColor = '#3D2914';
     }
-
     rCtx.fillStyle = bgColor;
     rCtx.strokeStyle = strokeColor;
-    rCtx.lineWidth = isSelected ? 3 : 2;
+    rCtx.lineWidth = isSel ? 3 : 2;
     rCtx.beginPath();
-    rCtx.roundRect(item.x - item.w / 2, item.y - item.h / 2, item.w, item.h, 12);
+    rCtx.roundRect(item.x-item.w/2,item.y-item.h/2,item.w,item.h,12);
     rCtx.fill();
     rCtx.stroke();
-
-    // 选项字母
-    const letter = 'ABCD'[idx];
     rCtx.fillStyle = strokeColor;
-    rCtx.font = 'bold 14px Microsoft YaHei';
+    rCtx.font = 'bold 13px Microsoft YaHei';
     rCtx.textAlign = 'left';
-    rCtx.fillText(letter + '.', item.x - item.w / 2 + 14, item.y + 5);
-
+    rCtx.fillText('ABCD'[idx]+'.',item.x-item.w/2+14,item.y+5);
     rCtx.fillStyle = textColor;
     rCtx.font = 'bold 15px Microsoft YaHei';
     rCtx.textAlign = 'center';
-    rCtx.fillText(item.text, item.x + 18, item.y + 5);
+    rCtx.fillText(item.text,item.x+20,item.y+5);
   });
 }
 
@@ -1246,110 +629,97 @@ function drawRunnerQuestion() {
   rCtx.strokeStyle = '#C8963E';
   rCtx.lineWidth = 2;
   rCtx.beginPath();
-  rCtx.roundRect(20, 310, 640, 65, 12);
+  rCtx.roundRect(20,310,640,65,12);
   rCtx.fill();
   rCtx.stroke();
   rCtx.fillStyle = '#3D2914';
   rCtx.font = 'bold 14px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText(`第 ${runnerQIdx + 1} 题：${runnerQuestion.q}`, runnerCanvas.width / 2, 337);
+  rCtx.fillText(`第 ${runnerQIdx+1} 题：${runnerQuestion.q}`,runnerCanvas.width/2,337);
   rCtx.font = '12px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('点击选项收集答案 | ❤️ ' + runnerLives + '  | 得分 ' + runnerScore, runnerCanvas.width / 2, 362);
+  rCtx.fillText(`点击选项收集答案 | ❤️ ${runnerLives} | 得分 ${runnerScore}`,runnerCanvas.width/2,362);
 }
 
 function drawRunnerKnowledge() {
   if (!showRunnerKnowledge) return;
   const isCorrect = selectedOptIdx >= 0 && runnerItems[selectedOptIdx] && runnerItems[selectedOptIdx].correct;
   const correctOpt = runnerQuestion ? runnerQuestion.opts[runnerQuestion.correct] : '';
-
   rCtx.fillStyle = 'rgba(255,248,220,0.97)';
   rCtx.strokeStyle = isCorrect ? '#4CAF50' : '#F44336';
   rCtx.lineWidth = 3;
   rCtx.beginPath();
-  rCtx.roundRect(60, 255, 560, 55, 14);
+  rCtx.roundRect(60,255,560,55,14);
   rCtx.fill();
   rCtx.stroke();
-
   rCtx.fillStyle = isCorrect ? '#2E7D32' : '#C62828';
   rCtx.font = 'bold 16px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText(
-    (isCorrect ? '✅ 正确！' : '❌ 答错了！') + ' 正确答案：' + correctOpt,
-    runnerCanvas.width / 2, 284
-  );
+  rCtx.fillText((isCorrect?'✅ 正确！':'❌ 答错了！')+' 正确答案：'+correctOpt,runnerCanvas.width/2,284);
   rCtx.font = '12px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('1秒后继续...', runnerCanvas.width / 2, 302);
+  rCtx.fillText('1秒后继续...',runnerCanvas.width/2,302);
 }
 
 function drawRunnerStartScreen() {
-  // 背景
-  const grad = rCtx.createLinearGradient(0, 0, 0, runnerCanvas.height);
-  grad.addColorStop(0, '#FDFAF2');
-  grad.addColorStop(1, '#F5E6C8');
+  const grad = rCtx.createLinearGradient(0,0,0,runnerCanvas.height);
+  grad.addColorStop(0,'#FDFAF2');
+  grad.addColorStop(1,'#F5E6C8');
   rCtx.fillStyle = grad;
-  rCtx.fillRect(0, 0, runnerCanvas.width, runnerCanvas.height);
-  // 装饰圆
+  rCtx.fillRect(0,0,runnerCanvas.width,runnerCanvas.height);
   for (let i = 0; i < 6; i++) {
-    rCtx.fillStyle = `rgba(200,169,110,${0.08 + i * 0.03})`;
+    rCtx.fillStyle = `rgba(200,169,110,${0.08+i*0.03})`;
     rCtx.beginPath();
-    rCtx.arc(runnerCanvas.width / 2, runnerCanvas.height / 2, 60 + i * 35, 0, Math.PI * 2);
+    rCtx.arc(runnerCanvas.width/2,runnerCanvas.height/2,60+i*35,0,Math.PI*2);
     rCtx.fill();
   }
   rCtx.fillStyle = '#8B6914';
   rCtx.font = 'bold 30px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText('🏃 淀粉知识大作战', runnerCanvas.width / 2, 145);
+  rCtx.fillText('🏃 淀粉知识大作战',runnerCanvas.width/2,145);
   rCtx.font = '17px Microsoft YaHei';
   rCtx.fillStyle = '#9A7840';
-  rCtx.fillText('边玩边学淀粉知识！', runnerCanvas.width / 2, 180);
+  rCtx.fillText('边玩边学淀粉知识！',runnerCanvas.width/2,180);
   rCtx.font = '14px Microsoft YaHei';
   rCtx.fillStyle = '#8B6914';
-  const rules = ['1. 点击正确答案 +10分', '2. 答错 ❤️-1', '3. 通关5道题即获胜！'];
-  rules.forEach((r, i) => rCtx.fillText(r, runnerCanvas.width / 2, 235 + i * 28));
+  ['1. 点击正确答案 +10分','2. 答错 ❤️-1','3. 通关5道题即获胜！'].forEach((r,i) => rCtx.fillText(r,runnerCanvas.width/2,235+i*28));
   rCtx.fillStyle = '#C8963E';
   rCtx.font = 'bold 20px Microsoft YaHei';
-  rCtx.fillText('按 空格键 或 点击画布 开始！', runnerCanvas.width / 2, 375);
+  rCtx.fillText('按空格键或点击画布开始！',runnerCanvas.width/2,375);
 }
 
 function drawRunnerGameOver() {
   rCtx.fillStyle = 'rgba(30,20,10,0.88)';
-  rCtx.fillRect(0, 0, runnerCanvas.width, runnerCanvas.height);
+  rCtx.fillRect(0,0,runnerCanvas.width,runnerCanvas.height);
   rCtx.fillStyle = '#F5E6C8';
   rCtx.font = 'bold 38px Microsoft YaHei';
   rCtx.textAlign = 'center';
-  rCtx.fillText('游戏结束', runnerCanvas.width / 2, runnerCanvas.height / 2 - 35);
+  rCtx.fillText('游戏结束',runnerCanvas.width/2,runnerCanvas.height/2-35);
   rCtx.fillStyle = '#FFF';
   rCtx.font = '22px Microsoft YaHei';
-  rCtx.fillText('📊 最终得分：' + totalScore, runnerCanvas.width / 2, runnerCanvas.height / 2 + 15);
+  rCtx.fillText('📊 最终得分：'+totalScore,runnerCanvas.width/2,runnerCanvas.height/2+15);
   rCtx.font = '15px Microsoft YaHei';
   rCtx.fillStyle = '#C8A020';
-  rCtx.fillText('按 R 键重新挑战', runnerCanvas.width / 2, runnerCanvas.height / 2 + 65);
+  rCtx.fillText('按 R 键重新挑战',runnerCanvas.width/2,runnerCanvas.height/2+65);
 }
 
 function drawRunnerStars() {
+  if (!runnerStars) return;
   runnerStars.forEach(star => {
     rCtx.fillStyle = 'rgba(200,169,110,0.5)';
     rCtx.beginPath();
-    rCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+    rCtx.arc(star.x,star.y,star.size,0,Math.PI*2);
     rCtx.fill();
     star.y += star.speed;
-    if (star.y > runnerCanvas.height) {
-      star.y = 0;
-      star.x = Math.random() * runnerCanvas.width;
-    }
+    if (star.y > runnerCanvas.height) { star.y = 0; star.x = Math.random()*runnerCanvas.width; }
   });
 }
 
 function runnerUpdateLoop() {
   if (!runnerStarted || runnerOver) return;
-
-  // 玩家平滑移动到目标
-  const dx = playerTarget.x - player.x;
-  const dy = playerTarget.y - player.y;
-  player.x += dx * 0.12;
-  player.y += dy * 0.12;
+  // 玩家平滑移到目标
+  player.x += (340 - player.x) * 0.1;
+  player.y += (350 - player.y) * 0.1;
 
   if (showRunnerKnowledge) {
     runnerKnowledgeTimer--;
@@ -1368,19 +738,17 @@ function runnerUpdateLoop() {
       }
     }
   }
-
   if (runnerLives <= 0) runnerOver = true;
 }
 
 function gameLoopRunner() {
-  rCtx.clearRect(0, 0, runnerCanvas.width, runnerCanvas.height);
-
-  // 背景渐变
-  const grad = rCtx.createLinearGradient(0, 0, 0, runnerCanvas.height);
-  grad.addColorStop(0, '#FDFAF2');
-  grad.addColorStop(1, '#F5E6C8');
+  if (!runnerStars) return;
+  rCtx.clearRect(0,0,runnerCanvas.width,runnerCanvas.height);
+  const grad = rCtx.createLinearGradient(0,0,0,runnerCanvas.height);
+  grad.addColorStop(0,'#FDFAF2');
+  grad.addColorStop(1,'#F5E6C8');
   rCtx.fillStyle = grad;
-  rCtx.fillRect(0, 0, runnerCanvas.width, runnerCanvas.height);
+  rCtx.fillRect(0,0,runnerCanvas.width,runnerCanvas.height);
 
   drawRunnerStars();
 
@@ -1405,40 +773,34 @@ function gameLoopRunner() {
 // ===== 结果页 =====
 function showResult(mode) {
   let emoji, title, badge, detail;
-
   if (mode === 'quiz') {
-    const total = quizShuffled.length;
-    const pct = quizCorrectCount / total;
-    if (pct === 1) { emoji = '🏆'; title = '满分！淀粉大师！'; badge = '淀粉大师'; }
-    else if (pct >= 0.75) { emoji = '🌟'; title = '太棒了！'; badge = '淀粉达人'; }
-    else if (pct >= 0.5) { emoji = '👍'; title = '还不错！'; badge = '淀粉学员'; }
-    else { emoji = '💪'; title = '继续加油！'; badge = '淀粉小白'; }
-    detail = `你答对了 ${quizCorrectCount} / ${total} 题！`;
+    const pct = quizCorrectCount / (quizShuffled.length || 1);
+    if (pct === 1) { emoji='🏆';title='满分！淀粉大师！';badge='淀粉大师'; }
+    else if (pct >= 0.75) { emoji='🌟';title='太棒了！';badge='淀粉达人'; }
+    else if (pct >= 0.5) { emoji='👍';title='还不错！';badge='淀粉学员'; }
+    else { emoji='💪';title='继续加油！';badge='淀粉小白'; }
+    detail = `你答对了 ${quizCorrectCount} / ${quizShuffled.length} 题！`;
   } else if (mode === 'classify') {
-    const highCorrect = classifyResults.high.filter(r => r.correct).length;
-    const lowCorrect = classifyResults.low.filter(r => r.correct).length;
-    const correct = highCorrect + lowCorrect;
-    const total = classifyData.length;
-    const pct = correct / total;
-    if (pct === 1) { emoji = '🏆'; title = '全部正确！'; badge = '淀粉分类高手'; }
-    else if (pct >= 0.8) { emoji = '🌟'; title = '几乎全对！'; badge = '淀粉达人'; }
-    else if (pct >= 0.5) { emoji = '👍'; title = '做得不错！'; badge = '淀粉学员'; }
-    else { emoji = '💪'; title = '继续努力！'; badge = '淀粉小白'; }
-    detail = `你正确分类了 ${correct} / ${total} 种食物！`;
+    const c = (classifyResults.high.filter(r=>r.correct).length + classifyResults.low.filter(r=>r.correct).length);
+    const t = classifyData.length || 12;
+    const pct = c/t;
+    if (pct === 1) { emoji='🏆';title='全部正确！';badge='淀粉分类高手'; }
+    else if (pct >= 0.8) { emoji='🌟';title='几乎全对！';badge='淀粉达人'; }
+    else if (pct >= 0.5) { emoji='👍';title='做得不错！';badge='淀粉学员'; }
+    else { emoji='💪';title='继续努力！';badge='淀粉小白'; }
+    detail = `你正确分类了 ${c} / ${t} 种食物！`;
   } else {
-    const pct = runnerScore / runnerShuffled.length;
-    if (pct === 1) { emoji = '🏆'; title = '满分通关！淀粉大师！'; badge = '淀粉跑酷王'; }
-    else if (pct >= 0.6) { emoji = '🌟'; title = '太棒了！'; badge = '淀粉达人'; }
-    else { emoji = '💪'; title = '继续加油！'; badge = '淀粉小白'; }
+    const pct = runnerScore / (runnerShuffled.length || 5);
+    if (pct === 1) { emoji='🏆';title='满分通关！淀粉大师！';badge='淀粉跑酷王'; }
+    else if (pct >= 0.6) { emoji='🌟';title='太棒了！';badge='淀粉达人'; }
+    else { emoji='💪';title='继续加油！';badge='淀粉小白'; }
     detail = `你答对了 ${runnerScore} / ${runnerShuffled.length} 道题！`;
   }
-
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('result-title').textContent = title;
   document.getElementById('result-score').textContent = `${totalScore} 分`;
   document.getElementById('result-badge').textContent = badge;
   document.getElementById('result-detail').textContent = detail;
-
   const tips = [
     "每天摄入的淀粉应占总碳水化合物的大部分，是人体最经济的能量来源。",
     "全谷物中的淀粉比精制淀粉消化更慢，能提供更持久的能量。",
@@ -1450,8 +812,7 @@ function showResult(mode) {
     "直链淀粉多的食物放凉后血糖反应更平稳。",
   ];
   shuffle(tips);
-  document.getElementById('starch-tip-list').innerHTML = tips.slice(0, 3).map(t => `<li>${t}</li>`).join('');
-
+  document.getElementById('starch-tip-list').innerHTML = tips.slice(0,3).map(t=>`<li>${t}</li>`).join('');
   switchMode('result');
 }
 
